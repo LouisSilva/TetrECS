@@ -29,105 +29,50 @@ public class GamePiece {
     private final String name;
 
     /**
+     * Enum for better storage of all the game piece types
+     */
+    private enum GamePieceType {
+        LINE(new int[][]{{0, 0, 0}, {1, 1, 1}, {0, 0, 0}}, "Line", 1),
+        C(new int[][]{{0, 0, 0}, {1, 1, 1}, {1, 0, 1}}, "C", 2),
+        PLUS(new int[][]{{0, 1, 0}, {1, 1, 1}, {0, 1, 0}}, "Plus", 3),
+        DOT(new int[][]{{0, 0, 0}, {0, 1, 0}, {0, 0, 0}}, "Dot", 4),
+        SQUARE(new int[][]{{1, 1, 0}, {1, 1, 0}, {0, 0, 0}}, "Square", 5),
+        L(new int[][]{{0, 0, 0}, {1, 1, 1}, {0, 0, 1}}, "L", 6),
+        J(new int[][]{{0, 0, 1}, {1, 1, 1}, {0, 0, 0}}, "J", 7),
+        S(new int[][]{{0, 0, 0}, {0, 1, 1}, {1, 1, 0}}, "S", 8),
+        Z(new int[][]{{1, 1, 0}, {0, 1, 1}, {0, 0, 0}}, "Z", 9),
+        T(new int[][]{{1, 0, 0}, {1, 1, 0}, {1, 0, 0}}, "T", 10),
+        X(new int[][]{{1, 0, 1}, {0, 1, 0}, {1, 0, 1}}, "X", 11),
+        CORNER(new int[][]{{0, 0, 0}, {1, 1, 0}, {1, 0, 0}}, "Corner", 12),
+        INVERSE_CORNER(new int[][]{{1, 0, 0}, {1, 1, 0}, {0, 0, 0}}, "Inverse Corner", 13),
+        DIAGONAL(new int[][]{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}, "Diagonal", 14),
+        DOUBLE(new int[][]{{0, 1, 0}, {0, 1, 0}, {0, 0, 0}}, "Double", 15);
+
+        private final int[][] blocks;
+        private final String name;
+        private final int value;
+
+        GamePieceType(int[][] blocks, String name, int value){
+            this.blocks = blocks;
+            this.name = name;
+            this.value = value;
+        }
+
+        public GamePiece createPiece() {
+            return new GamePiece(name, blocks, value);
+        }
+    }
+
+    /**
      * Create a new GamePiece of the specified piece number
      * @param piece piece number
      * @return the created GamePiece
      */
     public static GamePiece createPiece(int piece) {
-        switch (piece) {
-            //Line
-            case 0 -> {
-                int[][] blocks = {{0, 0, 0}, {1, 1, 1}, {0, 0, 0}};
-                return new GamePiece("Line", blocks, 1);
-            }
+        if (piece < 0 || piece >= GamePieceType.values().length)
+            throw new IndexOutOfBoundsException("No such piece: " + piece);
 
-            //C
-            case 1 -> {
-                int[][] blocks = {{0, 0, 0}, {1, 1, 1}, {1, 0, 1}};
-                return new GamePiece("C", blocks, 2);
-            }
-
-            //Plus
-            case 2 -> {
-                int[][] blocks = {{0, 1, 0}, {1, 1, 1}, {0, 1, 0}};
-                return new GamePiece("Plus", blocks, 3);
-            }
-
-            //Dot
-            case 3 -> {
-                int[][] blocks = {{0, 0, 0}, {0, 1, 0}, {0, 0, 0}};
-                return new GamePiece("Dot", blocks, 4);
-            }
-
-            //Square
-            case 4 -> {
-                int[][] blocks = {{1, 1, 0}, {1, 1, 0}, {0, 0, 0}};
-                return new GamePiece("Square", blocks, 5);
-            }
-
-            //L
-            case 5 -> {
-                int[][] blocks = {{0, 0, 0}, {1, 1, 1}, {0, 0, 1}};
-                return new GamePiece("L", blocks, 6);
-            }
-
-            //J
-            case 6 -> {
-                int[][] blocks = {{0, 0, 1}, {1, 1, 1}, {0, 0, 0}};
-                return new GamePiece("J", blocks, 7);
-            }
-
-            //S
-            case 7 -> {
-                int[][] blocks = {{0, 0, 0}, {0, 1, 1}, {1, 1, 0}};
-                return new GamePiece("S", blocks, 8);
-            }
-
-            //Z
-            case 8 -> {
-                int[][] blocks = {{1, 1, 0}, {0, 1, 1}, {0, 0, 0}};
-                return new GamePiece("Z", blocks, 9);
-            }
-
-            //T
-            case 9 -> {
-                int[][] blocks = {{1, 0, 0}, {1, 1, 0}, {1, 0, 0}};
-                return new GamePiece("T", blocks, 10);
-            }
-
-            //X
-            case 10 -> {
-                int[][] blocks = {{1, 0, 1}, {0, 1, 0}, {1, 0, 1}};
-                return new GamePiece("X", blocks, 11);
-            }
-
-            //Corner
-            case 11 -> {
-                int[][] blocks = {{0, 0, 0}, {1, 1, 0}, {1, 0, 0}};
-                return new GamePiece("Corner", blocks, 12);
-            }
-
-            //Inverse Corner
-            case 12 -> {
-                int[][] blocks = {{1, 0, 0}, {1, 1, 0}, {0, 0, 0}};
-                return new GamePiece("Inverse Corner", blocks, 13);
-            }
-
-            //Diagonal
-            case 13 -> {
-                int[][] blocks = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
-                return new GamePiece("Diagonal", blocks, 14);
-            }
-
-            //Double
-            case 14 -> {
-                int[][] blocks = {{0, 1, 0}, {0, 1, 0}, {0, 0, 0}};
-                return new GamePiece("Double", blocks, 15);
-            }
-        }
-
-        //Not a valid piece number
-        throw new IndexOutOfBoundsException("No such piece: " + piece);
+        return GamePieceType.values()[piece].createPiece();
     }
 
     /**
@@ -218,7 +163,4 @@ public class GamePiece {
     public String toString() {
         return this.name;
     }
-
-
-
 }
