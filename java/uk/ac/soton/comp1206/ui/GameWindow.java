@@ -23,6 +23,8 @@ public class GameWindow {
 
     private static final Logger logger = LogManager.getLogger(GameWindow.class);
 
+    private static final boolean communinatorEnabled = false;
+
     private final int width;
     private final int height;
 
@@ -31,7 +33,7 @@ public class GameWindow {
     private BaseScene currentScene;
     private Scene scene;
 
-    final Communicator communicator;
+    Communicator communicator;
 
     /**
      * Create a new GameWindow attached to the given stage with the specified width and height
@@ -45,19 +47,19 @@ public class GameWindow {
 
         this.stage = stage;
 
-        //Setup window
+        // Setup window
         setupStage();
 
-        //Setup resources
+        // Setup resources
         setupResources();
 
-        //Setup default scene
+        // Setup default scene
         setupDefaultScene();
 
-        //Setup communicator
-        communicator = new Communicator("ws://ofb-labs.soton.ac.uk:9700");
+        // Setup communicator
+        if (communinatorEnabled) communicator = new Communicator("ws://ofb-labs.soton.ac.uk:9700");
 
-        //Go to menu
+        // Go to menu
         startMenu();
     }
 
@@ -126,7 +128,7 @@ public class GameWindow {
      */
     public void cleanup() {
         logger.info("Clearing up previous scene");
-        communicator.clearListeners();
+        if (communicator != null) communicator.clearListeners();
     }
 
     /**

@@ -1,5 +1,7 @@
 package uk.ac.soton.comp1206.scene;
 
+import javafx.scene.control.Menu;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -79,6 +81,11 @@ public class ChallengeScene extends BaseScene {
     public void initialise() {
         logger.info("Initialising Challenge");
         game.start();
-    }
 
+        getScene().setOnKeyPressed( event -> {
+                  if (event.getCode() == KeyCode.ESCAPE) {
+                    gameWindow.loadScene(new MenuScene(gameWindow));
+                  }
+        });
+    }
 }

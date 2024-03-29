@@ -1,5 +1,6 @@
 package uk.ac.soton.comp1206.scene;
 
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,7 +18,13 @@ public class InstructionsScene extends BaseScene {
 
   @Override
   public void initialise() {
+    logger.info("Initialising Instructions");
 
+    getScene().setOnKeyPressed( event -> {
+      if (event.getCode() == KeyCode.ESCAPE) {
+        gameWindow.loadScene(new MenuScene(gameWindow));
+      }
+    });
   }
 
   @Override

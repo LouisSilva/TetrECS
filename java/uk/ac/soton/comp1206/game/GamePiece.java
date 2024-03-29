@@ -1,5 +1,8 @@
 package uk.ac.soton.comp1206.game;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Instances of GamePiece Represents the model of a specific Game Piece with it's block makeup.
  *
@@ -7,6 +10,8 @@ package uk.ac.soton.comp1206.game;
  * number.
  */
 public class GamePiece {
+
+    private static final Logger logger = LogManager.getLogger(GamePiece.class);
 
     /**
      * The total number of pieces in this game
@@ -126,6 +131,14 @@ public class GamePiece {
     }
 
     /**
+     * Get the value at a specific coordinate
+     * @return The value at the given coordinates
+     */
+    public int getValueAtCoordinate(int x, int y) {
+        return this.blocks[x][y];
+    }
+
+    /**
      * Rotate this piece the given number of rotations
      * @param rotations number of rotations
      */
@@ -155,12 +168,30 @@ public class GamePiece {
         blocks = rotated;
     }
 
-
     /**
      * Return the string representation of this piece
      * @return the name of this piece
      */
     public String toString() {
         return this.name;
+    }
+
+    /**
+     * Transforms the grid of the game piece into a string for debugging
+     * @return the grid string of the game piece
+     */
+    public String toGridString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n");
+
+        for (int y=0; y < 3; y++) {
+            for (int x=0; x < 3; x++) {
+                sb.append(String.format("%" + 3 + "d", getValueAtCoordinate(x,y)));
+            }
+
+            sb.append("\n");
+        }
+
+        return sb.toString();
     }
 }

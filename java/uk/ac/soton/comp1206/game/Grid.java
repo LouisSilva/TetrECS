@@ -2,6 +2,8 @@ package uk.ac.soton.comp1206.game;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * The Grid is a model which holds the state of a game board. It is made up of a set of Integer values arranged in a 2D
@@ -15,6 +17,8 @@ import javafx.beans.property.SimpleIntegerProperty;
  * The Grid should be linked to a GameBoard for it's display.
  */
 public class Grid {
+
+    private static final Logger logger = LogManager.getLogger(Grid.class);
 
     /**
      * The number of columns in this grid
@@ -153,8 +157,6 @@ public class Grid {
         } else {
             return false; // Piece cannot be played
         } // I will probably not use these return values, but it makes sense to have them anyway
-
-
     }
 
     /**
@@ -171,6 +173,26 @@ public class Grid {
      */
     public int getRows() {
         return rows;
+    }
+
+    /**
+     * Transforms the grid into a string for debugging
+     * @return the grid string
+     */
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n");
+
+        for (int y=0; y < getRows(); y++) {
+            for (int x=0; x < getCols(); x++) {
+                sb.append(String.format("%" + 3 + "d", getGridProperty(x, y).get()));
+            }
+
+            sb.append("\n");
+        }
+
+        return sb.toString();
     }
 
 }
