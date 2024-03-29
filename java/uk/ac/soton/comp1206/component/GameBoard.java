@@ -70,7 +70,7 @@ public class GameBoard extends GridPane {
         this.height = height;
         this.grid = grid;
 
-        //Build the GameBoard
+        // Build the GameBoard
         build();
     }
 
@@ -90,7 +90,7 @@ public class GameBoard extends GridPane {
         this.height = height;
         this.grid = new Grid(cols,rows);
 
-        //Build the GameBoard
+        // Build the GameBoard
         build();
     }
 
@@ -133,19 +133,19 @@ public class GameBoard extends GridPane {
         var blockWidth = width / cols;
         var blockHeight = height / rows;
 
-        //Create a new GameBlock UI component
+        // Create a new GameBlock UI component
         GameBlock block = new GameBlock(this, x, y, blockWidth, blockHeight);
 
-        //Add to the GridPane
+        // Add to the GridPane
         add(block,x,y);
 
-        //Add to our block directory
+        // Add to our block directory
         blocks[x][y] = block;
 
-        //Link the GameBlock component to the corresponding value in the Grid
+        // Link the GameBlock component to the corresponding value in the Grid
         block.bind(grid.getGridProperty(x,y));
 
-        //Add a mouse click handler to the block to trigger GameBoard blockClicked method
+        // Add a mouse click handler to the block to trigger GameBoard blockClicked method
         block.setOnMouseClicked((e) -> blockClicked(e, block));
 
         return block;

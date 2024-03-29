@@ -2,6 +2,8 @@ package uk.ac.soton.comp1206.game;
 
 import java.util.HashSet;
 import java.util.Random;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
@@ -35,6 +37,11 @@ public class Game {
      */
     private GamePiece currentPiece;
 
+    private final IntegerProperty score;
+    private final IntegerProperty level;
+    private final IntegerProperty lives;
+    private final IntegerProperty multiplier;
+
     /**
      * Create a new game with the specified rows and columns. Creates a corresponding grid model.
      * @param cols number of columns
@@ -44,7 +51,12 @@ public class Game {
         this.cols = cols;
         this.rows = rows;
 
-        //Create a new grid model to represent the game state
+        this.score = new SimpleIntegerProperty(this, "score", 0);
+        this.level = new SimpleIntegerProperty(this, "level", 0);
+        this.lives = new SimpleIntegerProperty(this, "lives", 3);
+        this.multiplier = new SimpleIntegerProperty(this, "multiplier", 1);
+
+        // Create a new grid model to represent the game state
         this.grid = new Grid(cols,rows);
     }
 
@@ -176,4 +188,69 @@ public class Game {
     public GamePiece getCurrentPiece() {
         return this.currentPiece;
     }
+
+    /**
+     * Get the current score
+     * @return the current score
+     */
+    public final int getScore() {
+        return this.score.get();
+    }
+
+    /**
+     * Sets the current game piece
+     * @param newScore the new score to set to
+     */
+    public final void setScore(int newScore) {
+        this.score.set(newScore);
+    }
+
+    /**
+     * Get the current level
+     * @return the current level
+     */
+    public final int getLevel() {
+        return this.level.get();
+    }
+
+    /**
+     * Sets the current level
+     * @param newLevel The new level
+     */
+    public final void setLevel(int newLevel) {
+        this.level.set(newLevel);
+    }
+
+    /**
+     * Get the current number of lives
+     * @return the current number of lives
+     */
+    public final int getLives() {
+        return this.lives.get();
+    }
+
+    /**
+     * Sets the current number of lives
+     * @param newLives The new number of lives
+     */
+    public final void setLives(int newLives) {
+        this.lives.set(newLives);
+    }
+
+    /**
+     * Get the current multiplier
+     * @return the current multiplier
+     */
+    public final int getMultiplier() {
+        return this.multiplier.get();
+    }
+
+    /**
+     * Sets the current multiplier
+     * @param newMultiplier The new multiplier
+     */
+    public final void setMultiplier(int newMultiplier) {
+        this.multiplier.set(newMultiplier);
+    }
+
 }

@@ -78,14 +78,14 @@ public class GameBlock extends Canvas {
         this.x = x;
         this.y = y;
 
-        //A canvas needs a fixed width and height
+        // A canvas needs a fixed width and height
         setWidth(width);
         setHeight(height);
 
-        //Do an initial paint
+        // Do an initial paint
         paint();
 
-        //When the value property is updated, call the internal updateValue method
+        // When the value property is updated, call the internal updateValue method
         value.addListener(this::updateValue);
     }
 
@@ -103,11 +103,11 @@ public class GameBlock extends Canvas {
      * Handle painting of the block canvas
      */
     public void paint() {
-        //If the block is empty, paint as empty
+        // If the block is empty, paint as empty
         if(value.get() == 0) {
             paintEmpty();
         } else {
-            //If the block is not empty, paint with the colour represented by the value
+            // If the block is not empty, paint with the colour represented by the value
             paintColor(COLOURS[value.get()]);
         }
     }
@@ -118,35 +118,43 @@ public class GameBlock extends Canvas {
     private void paintEmpty() {
         var gc = getGraphicsContext2D();
 
-        //Clear
-        gc.clearRect(0,0,width,height);
+        // Clear
+        gc.clearRect(0, 0, width, height);
 
-        //Fill
-        gc.setFill(Color.WHITE);
-        gc.fillRect(0,0, width, height);
+        // Top right
+        gc.setFill(Color.BLACK.deriveColor(0, 1, 1, 0.05));
+        gc.fillPolygon(new double[]{width, width, 0}, new double[]{0, height, 0}, 3);
 
-        //Border
-        gc.setStroke(Color.BLACK);
-        gc.strokeRect(0,0,width,height);
+        // Bottom left
+        gc.setFill(Color.WHITE.deriveColor(0, 1, 0.2, 0.05));
+        gc.fillPolygon(new double[]{0, width, 0}, new double[]{height, height, 0}, 3);
+
+        // Border
+        gc.setStroke(Color.WHITE.deriveColor(0, 1, 0.6, 0.8));
+        gc.strokeRect(0, 0, width, height);
     }
 
     /**
      * Paint this canvas with the given colour
      * @param colour the colour to paint
      */
-    private void paintColor(Paint colour) {
+    private void paintColor(Color colour) {
         var gc = getGraphicsContext2D();
 
-        //Clear
-        gc.clearRect(0,0,width,height);
+        // Clear
+        gc.clearRect(0, 0, width, height);
 
-        //Colour fill
-        gc.setFill(colour);
-        gc.fillRect(0,0, width, height);
+        // Top right
+        gc.setFill(colour.deriveColor(0, 1, 0.8, 1));
+        gc.fillPolygon(new double[]{width, width, 0}, new double[]{0, height, 0}, 3);
 
-        //Border
-        gc.setStroke(Color.BLACK);
-        gc.strokeRect(0,0,width,height);
+        // Bottom left
+        gc.setFill(colour.deriveColor(0, 1, 1.2, 1));
+        gc.fillPolygon(new double[]{0, width, 0}, new double[]{height, height, 0}, 3);
+
+        // Border
+        gc.setStroke(Color.WHITE.deriveColor(0, 1, 0.6, 0.8));
+        gc.strokeRect(0, 0, width, height);
     }
 
     /**

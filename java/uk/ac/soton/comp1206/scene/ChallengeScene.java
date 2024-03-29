@@ -37,7 +37,7 @@ public class ChallengeScene extends BaseScene {
 
         setupGame();
 
-        root = new GamePane(gameWindow.getWidth(),gameWindow.getHeight());
+        root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
 
         var challengePane = new StackPane();
         challengePane.setMaxWidth(gameWindow.getWidth());
@@ -48,11 +48,11 @@ public class ChallengeScene extends BaseScene {
         var mainPane = new BorderPane();
         challengePane.getChildren().add(mainPane);
 
-        var board = new GameBoard(game.getGrid(),gameWindow.getWidth()/2,gameWindow.getWidth()/2);
+        var board = new GameBoard(game.getGrid(), (double) gameWindow.getWidth() /2, (double) gameWindow.getWidth() /2);
         board.getStyleClass().add("gameBox");
         mainPane.setCenter(board);
 
-        //Handle block on gameboard grid being clicked
+        // Handle block on game-board grid being clicked
         board.setOnBlockClick(this::blockClicked);
     }
 
