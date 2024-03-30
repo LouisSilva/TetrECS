@@ -5,7 +5,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -13,10 +12,9 @@ import javafx.scene.layout.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
+import uk.ac.soton.comp1206.component.GameBlockCoordinate;
 import uk.ac.soton.comp1206.component.GameBoard;
 import uk.ac.soton.comp1206.component.PieceBoard;
-import uk.ac.soton.comp1206.event.NextPieceListener;
-import uk.ac.soton.comp1206.event.RotatePieceListener;
 import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.game.GamePiece;
 import uk.ac.soton.comp1206.game.Grid;
@@ -29,12 +27,16 @@ import uk.ac.soton.comp1206.ui.GameWindow;
 public class ChallengeScene extends BaseScene {
 
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
-    protected Game game;
+    private Game game;
 
     private final IntegerProperty score = new SimpleIntegerProperty(0);
     private final IntegerProperty level = new SimpleIntegerProperty(0);
     private final IntegerProperty lives = new SimpleIntegerProperty(3);
     private final IntegerProperty multiplier = new SimpleIntegerProperty(1);
+
+    private PieceBoard currentPieceBoard;
+    private PieceBoard followingPieceBoard;
+
 
     /**
      * Create a new Single Player challenge scene
@@ -90,6 +92,7 @@ public class ChallengeScene extends BaseScene {
         scoreBox.getStyleClass().add("stat-container");
         scoreHeader.getStyleClass().add("heading");
         scoreLabel.getStyleClass().add("score");
+        scoreBox.getChildren().addAll(scoreHeader, scoreLabel);
 
         // Challenge Mode title label
         Label titleLabel = new Label("Challenge Mode");
@@ -105,16 +108,13 @@ public class ChallengeScene extends BaseScene {
         livesHeader.getStyleClass().add("heading");
         livesLabel.getStyleClass().add("lives");
         livesBox.setAlignment(Pos.TOP_RIGHT);
-
-        scoreBox.getChildren().addAll(scoreHeader, scoreLabel);
         livesBox.getChildren().addAll(livesHeader, livesLabel);
+
         header.getChildren().addAll(scoreBox, titleLabel, livesBox);
 
         // Build sidebar
         VBox sidebar = new VBox();
-        sidebar.setSpacing(10);
-        sidebar.setAlignment(Pos.CENTER_RIGHT);
-        sidebar.setPrefWidth(200);
+        sidebar.getStyleClass().add("sidebar");
 
         // Highscore label
         VBox highScoreBox = new VBox();
@@ -125,6 +125,7 @@ public class ChallengeScene extends BaseScene {
         highScoreBox.getStyleClass().add("stat-container");
         highScoreHeader.getStyleClass().add("heading");
         highScoreLabel.getStyleClass().add("hiscore");
+        highScoreBox.getChildren().addAll(highScoreHeader, highScoreLabel);
 
         // Level label
         VBox levelBox = new VBox();
@@ -135,37 +136,33 @@ public class ChallengeScene extends BaseScene {
         levelBox.getStyleClass().add("stat-container");
         levelHeader.getStyleClass().add("heading");
         levelLabel.getStyleClass().add("level");
+        levelBox.getChildren().addAll(levelHeader, levelLabel);
+
+        // Incoming label
+        Label incomingLabel = new Label();
+        incomingLabel.textProperty().set("Incoming");
+        incomingLabel.getStyleClass().add("heading");
 
         // Piece boards
-        PieceBoard currentPieceBoard = new PieceBoard(
-                new Grid(3, 3),
+        currentPieceBoard = new PieceBoard(
+                3, 3,
+                (double) gameWindow.getWidth() / 8,
+                (double) gameWindow.getWidth() / 8);
+
+        followingPieceBoard = new PieceBoard(
+                3, 3,
                 (double) gameWindow.getWidth() / 10,
                 (double) gameWindow.getWidth() / 10);
-
-        PieceBoard followingPieceBoard = new PieceBoard(
-                new Grid(3, 3),
-                (double) gameWindow.getWidth() / 12,
-                (double) gameWindow.getWidth() / 12);
 
         currentPieceBoard.getStyleClass().add("gameBox");
         followingPieceBoard.getStyleClass().add("gameBox");
 
-        highScoreBox.getChildren().addAll(highScoreHeader, highScoreLabel);
-        levelBox.getChildren().addAll(levelHeader, levelLabel);
-        sidebar.getChildren().addAll(highScoreBox, levelBox, currentPieceBoard, followingPieceBoard);
+        sidebar.getChildren().addAll(highScoreBox, levelBox, incomingLabel, currentPieceBoard, followingPieceBoard);
 
         mainPane.setBottom(footer);
         mainPane.setCenter(board);
         mainPane.setTop(header);
         mainPane.setRight(sidebar);
-    }
-
-    /**
-     * Handle when a block is clicked
-     * @param gameBlock the Game Block that was clocked
-     */
-    private void blockClicked(GameBlock gameBlock) {
-        game.blockClicked(gameBlock);
     }
 
     /**
@@ -185,7 +182,6 @@ public class ChallengeScene extends BaseScene {
 
         game.setNextPieceListener(this::nextPiece);
         game.setRotatePieceListener(this::rotatePiece);
-        game.setSwapPieceListener(this::swapPiece);
     }
 
     /**
@@ -199,16 +195,13 @@ public class ChallengeScene extends BaseScene {
         getScene().setOnKeyPressed(this::handleKeyPressed);
     }
 
-    private void nextPiece(GamePiece nextGamePiece, GamePiece followingGamePiece) {
-
+    private void nextPiece(GamePiece currentGamePiece, GamePiece followingGamePiece) {
+        this.currentPieceBoard.displayPiece(currentGamePiece);
+        this.followingPieceBoard.displayPiece(followingGamePiece);
     }
 
     private void rotatePiece(GamePiece currentGamePiece) {
-
-    }
-
-    private void swapPiece(GamePiece currentGamePiece, GamePiece followingGamePiece) {
-
+        this.currentPieceBoard.displayPiece(currentGamePiece);
     }
 
     private void handleKeyPressed(KeyEvent keyEvent) {
@@ -236,6 +229,14 @@ public class ChallengeScene extends BaseScene {
                 game.dropCurrentPiece();
             }
         }
+    }
+
+    /**
+     * Handle when a block is clicked
+     * @param gameBlock the Game Block that was clocked
+     */
+    private void blockClicked(GameBlock gameBlock) {
+        game.blockClicked(gameBlock);
     }
 
     /**

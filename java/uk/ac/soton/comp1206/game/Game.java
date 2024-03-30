@@ -52,7 +52,6 @@ public class Game {
 
     private NextPieceListener nextPieceListener;
     private RotatePieceListener rotatePieceListener;
-    private SwapPieceListener swapPieceListener;
 
     /**
      * Create a new game with the specified rows and columns. Creates a corresponding grid model.
@@ -69,7 +68,7 @@ public class Game {
         this.multiplier = new SimpleIntegerProperty(this, "multiplier", 1);
 
         // Create a new grid model to represent the game state
-        this.grid = new Grid(cols,rows);
+        this.grid = new Grid(cols, rows);
     }
 
     /**
@@ -88,6 +87,7 @@ public class Game {
 
         this.currentPiece = this.spawnPiece();
         this.followingPiece = this.spawnPiece();
+        this.nextPieceListener.nextPiece(this.currentPiece, this.followingPiece);
     }
 
     public void exitGame() {
@@ -236,7 +236,7 @@ public class Game {
         this.currentPiece = this.followingPiece;
         this.followingPiece = tempPiece;
 
-        if (this.swapPieceListener != null) this.swapPieceListener.swapPiece(this.currentPiece, this.followingPiece);
+        if (this.nextPieceListener != null) this.nextPieceListener.nextPiece(this.currentPiece, this.followingPiece);
     }
 
     public void dropCurrentPiece() {
@@ -249,10 +249,6 @@ public class Game {
 
     public void setRotatePieceListener(RotatePieceListener listener) {
         this.rotatePieceListener = listener;
-    }
-
-    public void setSwapPieceListener(SwapPieceListener listener) {
-        this.swapPieceListener = listener;
     }
 
     /**

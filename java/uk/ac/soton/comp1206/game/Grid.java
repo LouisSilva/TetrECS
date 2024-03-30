@@ -4,6 +4,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import uk.ac.soton.comp1206.component.GameBlockCoordinate;
 
 /**
  * The Grid is a model which holds the state of a game board. It is made up of a set of Integer values arranged in a 2D
@@ -44,10 +45,10 @@ public class Grid {
         this.cols = cols;
         this.rows = rows;
 
-        //Create the grid itself
+        // Create the grid itself
         grid = new SimpleIntegerProperty[cols][rows];
 
-        //Add a SimpleIntegerProperty to every block in the grid
+        // Add a SimpleIntegerProperty to every block in the grid
         for(var y = 0; y < rows; y++) {
             for(var x = 0; x < cols; x++) {
                 grid[x][y] = new SimpleIntegerProperty(0);
@@ -137,7 +138,7 @@ public class Grid {
         y -= gamePiece.getBlocks()[0].length / 2;
 
         // Check if the piece can be played
-        if (canPlayPiece(gamePiece, x, y)){
+        if (canPlayPiece(gamePiece, x, y)) {
             int[][] blocks = gamePiece.getBlocks();
 
             for (int xPiece = 0; xPiece < blocks.length; xPiece++) {
@@ -156,7 +157,7 @@ public class Grid {
 
         } else {
             return false; // Piece cannot be played
-        } // I will probably not use these return values, but it makes sense to have them anyway
+        }
     }
 
     /**
@@ -193,6 +194,21 @@ public class Grid {
         }
 
         return sb.toString();
+    }
+
+    public GameBlockCoordinate getGridCentre() {
+        int centreRow = (this.getRows() - 1) / 2;
+        int centreCol = (this.getCols() - 1) / 2;
+
+        return new GameBlockCoordinate(centreRow, centreCol);
+    }
+
+    public void clearGrid() {
+        for(var y = 0; y < this.getRows(); y++) {
+            for(var x = 0; x < this.getCols(); x++) {
+                this.updateGridValue(x, y, 0);
+            }
+        }
     }
 
 }

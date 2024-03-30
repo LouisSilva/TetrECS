@@ -44,12 +44,12 @@ public class GameBoard extends GridPane {
     /**
      * The grid this GameBoard represents
      */
-    final Grid grid;
+    protected final Grid grid;
 
     /**
      * The blocks inside the grid
      */
-    GameBlock[][] blocks;
+     protected GameBlock[][] blocks;
 
     /**
      * The listener to call when a specific block is clicked
@@ -88,7 +88,7 @@ public class GameBoard extends GridPane {
         this.rows = rows;
         this.width = width;
         this.height = height;
-        this.grid = new Grid(cols,rows);
+        this.grid = new Grid(cols, rows);
 
         // Build the GameBoard
         build();
@@ -108,7 +108,7 @@ public class GameBoard extends GridPane {
      * Build the GameBoard by creating a block at every x and y column and row
      */
     protected void build() {
-        logger.info("Building grid: {} x {}",cols,rows);
+        logger.info("Building grid: {} x {}", this.getCols(), this.getRows());
 
         setMaxWidth(width);
         setMaxHeight(height);
@@ -117,9 +117,9 @@ public class GameBoard extends GridPane {
 
         blocks = new GameBlock[cols][rows];
 
-        for(var y = 0; y < rows; y++) {
-            for (var x = 0; x < cols; x++) {
-                createBlock(x,y);
+        for(var y = 0; y < this.getRows(); y++) {
+            for (var x = 0; x < this.getCols(); x++) {
+                createBlock(x, y);
             }
         }
     }
@@ -130,14 +130,14 @@ public class GameBoard extends GridPane {
      * @param y row
      */
     protected GameBlock createBlock(int x, int y) {
-        var blockWidth = width / cols;
-        var blockHeight = height / rows;
+        var blockWidth = width / this.getCols();
+        var blockHeight = height / this.getRows();
 
         // Create a new GameBlock UI component
         GameBlock block = new GameBlock(this, x, y, blockWidth, blockHeight);
 
         // Add to the GridPane
-        add(block,x,y);
+        this.add(block, x, y);
 
         // Add to our block directory
         blocks[x][y] = block;
@@ -164,7 +164,7 @@ public class GameBoard extends GridPane {
      * @param event mouse event
      * @param block block clicked on
      */
-    private void blockClicked(MouseEvent event, GameBlock block) {
+    protected void blockClicked(MouseEvent event, GameBlock block) {
         logger.info("Block clicked: {}", block);
 
         if (blockClickedListener != null) {
@@ -178,6 +178,27 @@ public class GameBoard extends GridPane {
 
     protected int getRows() {
         return this.rows;
+    }
+
+    /**
+     * Transforms the board into a string for debugging
+     * @return the board string
+     */
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n");
+
+        for (int y=0; y < getRows(); y++) {
+            for (int x=0; x < getCols(); x++) {
+                GameBlock currentBlock = this.getBlock(x, y);
+                sb.append(String.format("%" + 3 + "d", currentBlock.getValue()));
+            }
+
+            sb.append("\n");
+        }
+
+        return sb.toString();
     }
 
 }

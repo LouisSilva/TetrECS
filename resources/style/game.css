@@ -67,7 +67,7 @@
     -fx-fill: white;
     -fx-text-fill: white;
     -fx-font-family: 'Orbitron';
-    -fx-font-size: 20px;
+    -fx-font-size: 22px;
     -fx-font-weight: 700;
     -fx-stroke: black;
     -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
@@ -220,4 +220,10 @@ TextField {
 
 .challenge-header {
     -fx-spacing: 140px;
+}
+
+.sidebar {
+    -fx-alignment: center;
+    -fx-pref-width: 200px;
+    -fx-spacing: 10px;
 }
