@@ -8,6 +8,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBlockCoordinate;
+import uk.ac.soton.comp1206.event.NextPieceListener;
+import uk.ac.soton.comp1206.event.RotatePieceListener;
+import uk.ac.soton.comp1206.scene.ChallengeScene;
 
 /**
  * The Game class handles the main logic, state and properties of the TetrECS game. Methods to manipulate the game state
@@ -37,10 +40,18 @@ public class Game {
      */
     private GamePiece currentPiece;
 
-    private final IntegerProperty score;
-    private final IntegerProperty level;
-    private final IntegerProperty lives;
-    private final IntegerProperty multiplier;
+    /**
+     * The next piece
+     */
+    private GamePiece followingPiece;
+
+    public final IntegerProperty score;
+    public final IntegerProperty level;
+    public final IntegerProperty lives;
+    public final IntegerProperty multiplier;
+
+    private NextPieceListener nextPieceListener;
+    private RotatePieceListener rotatePieceListener;
 
     /**
      * Create a new game with the specified rows and columns. Creates a corresponding grid model.
@@ -75,6 +86,11 @@ public class Game {
         logger.info("Initialising game");
 
         this.currentPiece = this.spawnPiece();
+        this.followingPiece = this.spawnPiece();
+    }
+
+    public void exitGame() {
+        logger.info("Exiting game");
     }
 
     /**
@@ -88,17 +104,18 @@ public class Game {
 
         // Play piece if possible
         if (grid.playPiece(this.getCurrentPiece(), x, y)) {
-            this.nextPiece(this.spawnPiece());
+            this.nextPiece();
             logger.debug("Played piece");
-            this.afterPiece();
+            this.afterPiecePlayed();
         }
 
         logger.debug(grid.toString());
         logger.debug("Current piece: " + this.getCurrentPiece().toGridString());
     }
 
-    private void afterPiece() {
+    private void afterPiecePlayed() {
         HashSet<GameBlockCoordinate> blocksToClear = new HashSet<>();
+        int numOfLinesCleared = 0;
 
         // Check for full rows
         for (int row=0; row < getRows(); row++) {
@@ -111,6 +128,7 @@ public class Game {
             }
 
             if (fullRow) {
+                numOfLinesCleared++;
                 for (int col=0; col < getCols(); col++) {
                     blocksToClear.add(new GameBlockCoordinate(col, row));
                 }
@@ -128,6 +146,7 @@ public class Game {
             }
 
             if (fullCol) {
+                numOfLinesCleared++;
                 for (int row=0; row < getRows(); row++) {
                     blocksToClear.add(new GameBlockCoordinate(col, row));
                 }
@@ -137,6 +156,48 @@ public class Game {
         for (GameBlockCoordinate block : blocksToClear) {
             grid.updateGridValue(block.getX(), block.getY(), 0);
             logger.debug("Cleared block with coords (x,y): (" + block.getX() + "," + block.getY() + ")");
+        }
+
+        // Update score and level
+        if (numOfLinesCleared >= 1 && !blocksToClear.isEmpty()) {
+            this.calculateNewScore(numOfLinesCleared, blocksToClear.size());
+            this.calculateNewLevel();
+        }
+
+        // Update multiplier
+        this.calculateNewMultiplier(numOfLinesCleared >= 1);
+    }
+
+    /**
+     * Calculates the new score after a line is cleared
+     * @param numOfLines the number of lines cleared
+     * @param numOfBlocks the number of blocks cleared
+     */
+    private void calculateNewScore(int numOfLines, int numOfBlocks) {
+        score.add(numOfLines * numOfBlocks * 10 * this.multiplier.get());
+    }
+
+    /**
+     * Calculates the new multiplier after a game piece is played
+     * @param increase whether to increase the multiplier
+     */
+    private void calculateNewMultiplier(boolean increase) {
+        if (increase) {
+            multiplier.add(1);
+        } else {
+            multiplier.set(1);
+        }
+    }
+
+    /**
+     * Calculates the level after a game piece is played
+     */
+    private void calculateNewLevel() {
+        if (this.score.get() <= 999) {
+            this.level.set(1);
+        }
+        else {
+            this.level.set(((this.score.get() / 1000) * 1000) / 1000);
         }
     }
 
@@ -150,13 +211,38 @@ public class Game {
     }
 
     /**
-     * Changes the current piece variable to the specified piece
-     * @param piece the piece to switch to
+     * Changes the current piece and following piece variables to the next piece
      */
-    private void nextPiece(GamePiece piece) {
-        this.currentPiece = piece;
+    private void nextPiece() {
+        this.currentPiece = this.followingPiece;
+        this.followingPiece = this.spawnPiece();
+
+        this.nextPieceListener.nextPiece(this.currentPiece, this.followingPiece);
     }
 
+    /**
+     * Rotates the current piece
+     */
+    public void rotateCurrentPiece() {
+        this.getCurrentPiece().rotate();
+        if (this.rotatePieceListener != null) {
+            rotatePieceListener.rotatePiece();
+        }
+    }
+
+    public void rotateCurrentPiece(int rotations) {
+        for (int i=0; i < rotations; i++) {
+            this.rotateCurrentPiece();
+        }
+    }
+
+    public void setNextPieceListener(NextPieceListener listener) {
+        this.nextPieceListener = listener;
+    }
+
+    public void setRotatePieceListener(RotatePieceListener listener) {
+        this.rotatePieceListener = listener;
+    }
     /**
      * Get the grid model inside this game representing the game state of the board
      * @return game grid model
@@ -188,69 +274,4 @@ public class Game {
     public GamePiece getCurrentPiece() {
         return this.currentPiece;
     }
-
-    /**
-     * Get the current score
-     * @return the current score
-     */
-    public final int getScore() {
-        return this.score.get();
-    }
-
-    /**
-     * Sets the current game piece
-     * @param newScore the new score to set to
-     */
-    public final void setScore(int newScore) {
-        this.score.set(newScore);
-    }
-
-    /**
-     * Get the current level
-     * @return the current level
-     */
-    public final int getLevel() {
-        return this.level.get();
-    }
-
-    /**
-     * Sets the current level
-     * @param newLevel The new level
-     */
-    public final void setLevel(int newLevel) {
-        this.level.set(newLevel);
-    }
-
-    /**
-     * Get the current number of lives
-     * @return the current number of lives
-     */
-    public final int getLives() {
-        return this.lives.get();
-    }
-
-    /**
-     * Sets the current number of lives
-     * @param newLives The new number of lives
-     */
-    public final void setLives(int newLives) {
-        this.lives.set(newLives);
-    }
-
-    /**
-     * Get the current multiplier
-     * @return the current multiplier
-     */
-    public final int getMultiplier() {
-        return this.multiplier.get();
-    }
-
-    /**
-     * Sets the current multiplier
-     * @param newMultiplier The new multiplier
-     */
-    public final void setMultiplier(int newMultiplier) {
-        this.multiplier.set(newMultiplier);
-    }
-
 }

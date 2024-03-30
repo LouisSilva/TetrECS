@@ -167,9 +167,17 @@ public class GameBoard extends GridPane {
     private void blockClicked(MouseEvent event, GameBlock block) {
         logger.info("Block clicked: {}", block);
 
-        if(blockClickedListener != null) {
+        if (blockClickedListener != null) {
             blockClickedListener.blockClicked(block);
         }
+    }
+
+    protected int getCols() {
+        return this.cols;
+    }
+
+    protected int getRows() {
+        return this.rows;
     }
 
 }

@@ -1,13 +1,20 @@
 package uk.ac.soton.comp1206.scene;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Menu;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBoard;
+import uk.ac.soton.comp1206.event.NextPieceListener;
+import uk.ac.soton.comp1206.event.RotatePieceListener;
 import uk.ac.soton.comp1206.game.Game;
+import uk.ac.soton.comp1206.game.GamePiece;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
@@ -18,6 +25,11 @@ public class ChallengeScene extends BaseScene {
 
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
     protected Game game;
+
+    private final IntegerProperty score = new SimpleIntegerProperty(0);
+    private final IntegerProperty level = new SimpleIntegerProperty(0);
+    private final IntegerProperty lives = new SimpleIntegerProperty(3);
+    private final IntegerProperty multiplier = new SimpleIntegerProperty(1);
 
     /**
      * Create a new Single Player challenge scene
@@ -72,6 +84,14 @@ public class ChallengeScene extends BaseScene {
 
         //Start new game
         game = new Game(5, 5);
+
+        // Add binds
+        this.bindScore(game.score);
+        this.bindLevel(game.level);
+        this.bindLives(game.lives);
+        this.bindMultiplier(game.multiplier);
+
+        game.setNextPieceListener(this::nextPiece);
     }
 
     /**
@@ -82,10 +102,61 @@ public class ChallengeScene extends BaseScene {
         logger.info("Initialising Challenge");
         game.start();
 
-        getScene().setOnKeyPressed( event -> {
-                  if (event.getCode() == KeyCode.ESCAPE) {
-                    gameWindow.loadScene(new MenuScene(gameWindow));
-                  }
-        });
+        getScene().setOnKeyPressed(this::handleKeyPressed);
+    }
+
+    private void nextPiece(GamePiece nextGamePiece, GamePiece followingGamePiece) {
+        logger.debug("next piece yeeeeeeee");
+    }
+
+    private void handleKeyPressed(KeyEvent keyEvent) {
+        KeyCode keyCode = keyEvent.getCode();
+
+        switch (keyCode) {
+            case ESCAPE -> {
+                game.exitGame();
+                gameWindow.loadScene(new MenuScene(gameWindow));
+            }
+
+            case Q, Z, OPEN_BRACKET -> {
+                game.rotateCurrentPiece(3);
+            }
+
+            case E, C, CLOSE_BRACKET -> {
+                game.rotateCurrentPiece();
+            }
+        }
+    }
+
+    /**
+     * Bind the score of the game to the UI copy
+     * @param input property to bind the value to
+     */
+    private void bindScore(ObservableValue<? extends Number> input) {
+        this.score.bind(input);
+    }
+
+    /**
+     * Bind the level of the game to the UI copy
+     * @param input property to bind the value to
+     */
+    private void bindLevel(ObservableValue<? extends Number> input) {
+        this.level.bind(input);
+    }
+
+    /**
+     * Bind the lives in the game to the UI copy
+     * @param input property to bind the value to
+     */
+    private void bindLives(ObservableValue<? extends Number> input) {
+        this.lives.bind(input);
+    }
+
+    /**
+     * Bind the multiplier of the game to the UI copy
+     * @param input property to bind the value to
+     */
+    private void bindMultiplier(ObservableValue<? extends Number> input) {
+        this.multiplier.bind(input);
     }
 }
