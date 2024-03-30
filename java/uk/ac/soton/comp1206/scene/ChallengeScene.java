@@ -6,6 +6,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
@@ -61,11 +62,19 @@ public class ChallengeScene extends BaseScene {
         challengePane.getStyleClass().add("menu-background");
         root.getChildren().add(challengePane);
 
-        var mainPane = new BorderPane();
+        BorderPane mainPane = new BorderPane();
+        BorderPane headerAndBoardPane = new BorderPane();
         challengePane.getChildren().add(mainPane);
 
-        var board = new GameBoard(game.getGrid(), (double) gameWindow.getWidth() /2, (double) gameWindow.getWidth() /2);
+        // Build footer
+        StackPane footer = new StackPane();
+        ProgressBar progressBar = new ProgressBar();
+        footer.getChildren().addAll(progressBar);
+
+        // Build game board
+        var board = new GameBoard(game.getGrid(), (double) gameWindow.getWidth() / 2, (double) gameWindow.getWidth() / 2);
         board.getStyleClass().add("gameBox");
+        board.setOnBlockClick(this::blockClicked);
 
         // Build header
         HBox header = new HBox();
@@ -73,6 +82,7 @@ public class ChallengeScene extends BaseScene {
         header.setAlignment(Pos.CENTER);
         header.getStyleClass().add("challenge-header");
 
+        // Score label
         VBox scoreBox = new VBox();
         Label scoreHeader = new Label();
         Label scoreLabel = new Label();
@@ -82,9 +92,24 @@ public class ChallengeScene extends BaseScene {
         scoreHeader.getStyleClass().add("heading");
         scoreLabel.getStyleClass().add("score");
 
+        // Challenge Mode title label
         Label titleLabel = new Label("Challenge Mode");
         titleLabel.getStyleClass().add("title");
 
+        scoreBox.getChildren().addAll(scoreHeader, scoreLabel);
+        header.getChildren().addAll(scoreBox, titleLabel);
+
+        // Build sidebar
+        VBox sidebar = new VBox();
+        sidebar.setSpacing(10);
+        sidebar.setAlignment(Pos.TOP_RIGHT);
+        sidebar.setPrefWidth(200);
+
+        // Create spacer
+        Region spacer = new Region();
+        spacer.setPrefHeight(50);
+
+        // Lives label
         VBox livesBox = new VBox();
         Label livesHeader = new Label();
         Label livesLabel = new Label();
@@ -93,25 +118,19 @@ public class ChallengeScene extends BaseScene {
         livesBox.getStyleClass().add("stat-container");
         livesHeader.getStyleClass().add("heading");
         livesLabel.getStyleClass().add("lives");
+        livesBox.setAlignment(Pos.TOP_RIGHT);
 
-        scoreBox.getChildren().addAll(scoreHeader, scoreLabel);
-        livesBox.getChildren().addAll(livesHeader, livesLabel);
-        header.getChildren().addAll(scoreBox, titleLabel);
-
-        // Build sidebar
-        VBox sidebar = new VBox();
-        sidebar.setSpacing(10);
-        sidebar.setAlignment(Pos.CENTER);
-
+        // Highscore label
         VBox highScoreBox = new VBox();
         Label highScoreHeader = new Label();
         Label highScoreLabel = new Label();
-        highScoreHeader.textProperty().set("Highscore");
+        highScoreHeader.textProperty().set("High Score");
         highScoreLabel.textProperty().bind(score.asString("%d"));
         highScoreBox.getStyleClass().add("stat-container");
         highScoreHeader.getStyleClass().add("heading");
         highScoreLabel.getStyleClass().add("hiscore");
 
+        // Level label
         VBox levelBox = new VBox();
         Label levelHeader = new Label();
         Label levelLabel = new Label();
@@ -121,33 +140,31 @@ public class ChallengeScene extends BaseScene {
         levelHeader.getStyleClass().add("heading");
         levelLabel.getStyleClass().add("level");
 
+        // Piece boards
         PieceBoard currentPieceBoard = new PieceBoard(
                 new Grid(3, 3),
                 (double) gameWindow.getWidth() / 10,
-                (double) gameWindow.getHeight() / 10);
+                (double) gameWindow.getWidth() / 10);
 
         PieceBoard followingPieceBoard = new PieceBoard(
                 new Grid(3, 3),
                 (double) gameWindow.getWidth() / 12,
-                (double) gameWindow.getHeight() / 12);
+                (double) gameWindow.getWidth() / 12);
 
         currentPieceBoard.getStyleClass().add("gameBox");
         followingPieceBoard.getStyleClass().add("gameBox");
 
+        livesBox.getChildren().addAll(livesHeader, livesLabel);
         highScoreBox.getChildren().addAll(highScoreHeader, highScoreLabel);
         levelBox.getChildren().addAll(levelHeader, levelLabel);
-        sidebar.getChildren().addAll(livesBox, highScoreBox, levelBox, currentPieceBoard, followingPieceBoard);
+        sidebar.getChildren().addAll(livesBox, spacer, highScoreBox, levelBox, currentPieceBoard, followingPieceBoard);
 
-        // Build footer
-        StackPane footer = new StackPane();
-
-        mainPane.setCenter(board);
-        mainPane.setTop(header);
-        mainPane.setRight(sidebar);
         mainPane.setBottom(footer);
+        mainPane.setCenter(headerAndBoardPane);
+        mainPane.setRight(sidebar);
 
-        // Handle block on game-board grid being clicked
-        board.setOnBlockClick(this::blockClicked);
+        headerAndBoardPane.setTop(header);
+        headerAndBoardPane.setCenter(board);
     }
 
     /**
