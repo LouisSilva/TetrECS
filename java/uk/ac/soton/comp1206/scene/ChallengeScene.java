@@ -63,7 +63,6 @@ public class ChallengeScene extends BaseScene {
         root.getChildren().add(challengePane);
 
         BorderPane mainPane = new BorderPane();
-        BorderPane headerAndBoardPane = new BorderPane();
         challengePane.getChildren().add(mainPane);
 
         // Build footer
@@ -96,19 +95,6 @@ public class ChallengeScene extends BaseScene {
         Label titleLabel = new Label("Challenge Mode");
         titleLabel.getStyleClass().add("title");
 
-        scoreBox.getChildren().addAll(scoreHeader, scoreLabel);
-        header.getChildren().addAll(scoreBox, titleLabel);
-
-        // Build sidebar
-        VBox sidebar = new VBox();
-        sidebar.setSpacing(10);
-        sidebar.setAlignment(Pos.TOP_RIGHT);
-        sidebar.setPrefWidth(200);
-
-        // Create spacer
-        Region spacer = new Region();
-        spacer.setPrefHeight(50);
-
         // Lives label
         VBox livesBox = new VBox();
         Label livesHeader = new Label();
@@ -119,6 +105,16 @@ public class ChallengeScene extends BaseScene {
         livesHeader.getStyleClass().add("heading");
         livesLabel.getStyleClass().add("lives");
         livesBox.setAlignment(Pos.TOP_RIGHT);
+
+        scoreBox.getChildren().addAll(scoreHeader, scoreLabel);
+        livesBox.getChildren().addAll(livesHeader, livesLabel);
+        header.getChildren().addAll(scoreBox, titleLabel, livesBox);
+
+        // Build sidebar
+        VBox sidebar = new VBox();
+        sidebar.setSpacing(10);
+        sidebar.setAlignment(Pos.CENTER_RIGHT);
+        sidebar.setPrefWidth(200);
 
         // Highscore label
         VBox highScoreBox = new VBox();
@@ -154,17 +150,14 @@ public class ChallengeScene extends BaseScene {
         currentPieceBoard.getStyleClass().add("gameBox");
         followingPieceBoard.getStyleClass().add("gameBox");
 
-        livesBox.getChildren().addAll(livesHeader, livesLabel);
         highScoreBox.getChildren().addAll(highScoreHeader, highScoreLabel);
         levelBox.getChildren().addAll(levelHeader, levelLabel);
-        sidebar.getChildren().addAll(livesBox, spacer, highScoreBox, levelBox, currentPieceBoard, followingPieceBoard);
+        sidebar.getChildren().addAll(highScoreBox, levelBox, currentPieceBoard, followingPieceBoard);
 
         mainPane.setBottom(footer);
-        mainPane.setCenter(headerAndBoardPane);
+        mainPane.setCenter(board);
+        mainPane.setTop(header);
         mainPane.setRight(sidebar);
-
-        headerAndBoardPane.setTop(header);
-        headerAndBoardPane.setCenter(board);
     }
 
     /**
@@ -207,7 +200,7 @@ public class ChallengeScene extends BaseScene {
     }
 
     private void nextPiece(GamePiece nextGamePiece, GamePiece followingGamePiece) {
-        logger.debug("next piece yeeeeeeee");
+
     }
 
     private void rotatePiece(GamePiece currentGamePiece) {

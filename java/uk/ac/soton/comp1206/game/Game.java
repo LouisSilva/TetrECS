@@ -1,16 +1,16 @@
 package uk.ac.soton.comp1206.game;
 
+import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Random;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBlockCoordinate;
-import uk.ac.soton.comp1206.event.NextPieceListener;
-import uk.ac.soton.comp1206.event.RotatePieceListener;
-import uk.ac.soton.comp1206.event.SwapPieceListener;
+import uk.ac.soton.comp1206.event.*;
 
 /**
  * The Game class handles the main logic, state and properties of the TetrECS game. Methods to manipulate the game state
@@ -106,7 +106,6 @@ public class Game {
         // Play piece if possible
         if (grid.playPiece(this.getCurrentPiece(), x, y)) {
             this.nextPiece();
-            logger.debug("Played piece");
             this.afterPiecePlayed();
         }
 
@@ -156,7 +155,6 @@ public class Game {
 
         for (GameBlockCoordinate block : blocksToClear) {
             grid.updateGridValue(block.getX(), block.getY(), 0);
-            logger.debug("Cleared block with coords (x,y): (" + block.getX() + "," + block.getY() + ")");
         }
 
         // Update score and level
@@ -175,7 +173,8 @@ public class Game {
      * @param numOfBlocks the number of blocks cleared
      */
     private void calculateNewScore(int numOfLines, int numOfBlocks) {
-        score.add(numOfLines * numOfBlocks * 10 * this.multiplier.get());
+        int addedScore = numOfLines * numOfBlocks * 10 * this.multiplier.get();
+        this.score.set(this.score.get() + addedScore);
     }
 
     /**
@@ -184,9 +183,9 @@ public class Game {
      */
     private void calculateNewMultiplier(boolean increase) {
         if (increase) {
-            multiplier.add(1);
+            this.multiplier.set(this.multiplier.get() + 1);
         } else {
-            multiplier.set(1);
+            this.multiplier.set(1);
         }
     }
 
@@ -194,12 +193,7 @@ public class Game {
      * Calculates the level after a game piece is played
      */
     private void calculateNewLevel() {
-        if (this.score.get() <= 999) {
-            this.level.set(1);
-        }
-        else {
-            this.level.set(((this.score.get() / 1000) * 1000) / 1000);
-        }
+        this.level.set(((this.score.get() / 1000) * 1000) / 1000);
     }
 
     /**
@@ -242,7 +236,7 @@ public class Game {
         this.currentPiece = this.followingPiece;
         this.followingPiece = tempPiece;
 
-        this.swapPieceListener.swapPiece(this.currentPiece, this.followingPiece);
+        if (this.swapPieceListener != null) this.swapPieceListener.swapPiece(this.currentPiece, this.followingPiece);
     }
 
     public void dropCurrentPiece() {
