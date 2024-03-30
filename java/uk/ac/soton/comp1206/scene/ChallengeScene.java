@@ -3,6 +3,8 @@ package uk.ac.soton.comp1206.scene;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Pos;
+import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -11,10 +13,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBoard;
+import uk.ac.soton.comp1206.component.PieceBoard;
 import uk.ac.soton.comp1206.event.NextPieceListener;
 import uk.ac.soton.comp1206.event.RotatePieceListener;
 import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.game.GamePiece;
+import uk.ac.soton.comp1206.game.Grid;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
@@ -62,7 +66,85 @@ public class ChallengeScene extends BaseScene {
 
         var board = new GameBoard(game.getGrid(), (double) gameWindow.getWidth() /2, (double) gameWindow.getWidth() /2);
         board.getStyleClass().add("gameBox");
+
+        // Build header
+        HBox header = new HBox();
+        header.setSpacing(20);
+        header.setAlignment(Pos.CENTER);
+        header.getStyleClass().add("challenge-header");
+
+        VBox scoreBox = new VBox();
+        Label scoreHeader = new Label();
+        Label scoreLabel = new Label();
+        scoreHeader.textProperty().set("Score");
+        scoreLabel.textProperty().bind(score.asString("%d"));
+        scoreBox.getStyleClass().add("stat-container");
+        scoreHeader.getStyleClass().add("heading");
+        scoreLabel.getStyleClass().add("score");
+
+        Label titleLabel = new Label("Challenge Mode");
+        titleLabel.getStyleClass().add("title");
+
+        VBox livesBox = new VBox();
+        Label livesHeader = new Label();
+        Label livesLabel = new Label();
+        livesHeader.textProperty().set("Lives");
+        livesLabel.textProperty().bind(lives.asString("%d"));
+        livesBox.getStyleClass().add("stat-container");
+        livesHeader.getStyleClass().add("heading");
+        livesLabel.getStyleClass().add("lives");
+
+        scoreBox.getChildren().addAll(scoreHeader, scoreLabel);
+        livesBox.getChildren().addAll(livesHeader, livesLabel);
+        header.getChildren().addAll(scoreBox, titleLabel);
+
+        // Build sidebar
+        VBox sidebar = new VBox();
+        sidebar.setSpacing(10);
+        sidebar.setAlignment(Pos.CENTER);
+
+        VBox highScoreBox = new VBox();
+        Label highScoreHeader = new Label();
+        Label highScoreLabel = new Label();
+        highScoreHeader.textProperty().set("Highscore");
+        highScoreLabel.textProperty().bind(score.asString("%d"));
+        highScoreBox.getStyleClass().add("stat-container");
+        highScoreHeader.getStyleClass().add("heading");
+        highScoreLabel.getStyleClass().add("hiscore");
+
+        VBox levelBox = new VBox();
+        Label levelHeader = new Label();
+        Label levelLabel = new Label();
+        levelHeader.textProperty().set("Level");
+        levelLabel.textProperty().bind(level.asString("%d"));
+        levelBox.getStyleClass().add("stat-container");
+        levelHeader.getStyleClass().add("heading");
+        levelLabel.getStyleClass().add("level");
+
+        PieceBoard currentPieceBoard = new PieceBoard(
+                new Grid(3, 3),
+                (double) gameWindow.getWidth() / 10,
+                (double) gameWindow.getHeight() / 10);
+
+        PieceBoard followingPieceBoard = new PieceBoard(
+                new Grid(3, 3),
+                (double) gameWindow.getWidth() / 12,
+                (double) gameWindow.getHeight() / 12);
+
+        currentPieceBoard.getStyleClass().add("gameBox");
+        followingPieceBoard.getStyleClass().add("gameBox");
+
+        highScoreBox.getChildren().addAll(highScoreHeader, highScoreLabel);
+        levelBox.getChildren().addAll(levelHeader, levelLabel);
+        sidebar.getChildren().addAll(livesBox, highScoreBox, levelBox, currentPieceBoard, followingPieceBoard);
+
+        // Build footer
+        StackPane footer = new StackPane();
+
         mainPane.setCenter(board);
+        mainPane.setTop(header);
+        mainPane.setRight(sidebar);
+        mainPane.setBottom(footer);
 
         // Handle block on game-board grid being clicked
         board.setOnBlockClick(this::blockClicked);
@@ -92,6 +174,8 @@ public class ChallengeScene extends BaseScene {
         this.bindMultiplier(game.multiplier);
 
         game.setNextPieceListener(this::nextPiece);
+        game.setRotatePieceListener(this::rotatePiece);
+        game.setSwapPieceListener(this::swapPiece);
     }
 
     /**
@@ -109,6 +193,14 @@ public class ChallengeScene extends BaseScene {
         logger.debug("next piece yeeeeeeee");
     }
 
+    private void rotatePiece(GamePiece currentGamePiece) {
+
+    }
+
+    private void swapPiece(GamePiece currentGamePiece, GamePiece followingGamePiece) {
+
+    }
+
     private void handleKeyPressed(KeyEvent keyEvent) {
         KeyCode keyCode = keyEvent.getCode();
 
@@ -124,6 +216,14 @@ public class ChallengeScene extends BaseScene {
 
             case E, C, CLOSE_BRACKET -> {
                 game.rotateCurrentPiece();
+            }
+
+            case SPACE, R -> {
+                game.swapCurrentPiece();
+            }
+
+            case ENTER, X -> {
+                game.dropCurrentPiece();
             }
         }
     }

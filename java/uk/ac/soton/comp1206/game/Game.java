@@ -10,7 +10,7 @@ import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBlockCoordinate;
 import uk.ac.soton.comp1206.event.NextPieceListener;
 import uk.ac.soton.comp1206.event.RotatePieceListener;
-import uk.ac.soton.comp1206.scene.ChallengeScene;
+import uk.ac.soton.comp1206.event.SwapPieceListener;
 
 /**
  * The Game class handles the main logic, state and properties of the TetrECS game. Methods to manipulate the game state
@@ -52,6 +52,7 @@ public class Game {
 
     private NextPieceListener nextPieceListener;
     private RotatePieceListener rotatePieceListener;
+    private SwapPieceListener swapPieceListener;
 
     /**
      * Create a new game with the specified rows and columns. Creates a corresponding grid model.
@@ -226,7 +227,7 @@ public class Game {
     public void rotateCurrentPiece() {
         this.getCurrentPiece().rotate();
         if (this.rotatePieceListener != null) {
-            rotatePieceListener.rotatePiece();
+            rotatePieceListener.rotatePiece(this.currentPiece);
         }
     }
 
@@ -236,6 +237,18 @@ public class Game {
         }
     }
 
+    public void swapCurrentPiece() {
+        GamePiece tempPiece = this.currentPiece;
+        this.currentPiece = this.followingPiece;
+        this.followingPiece = tempPiece;
+
+        this.swapPieceListener.swapPiece(this.currentPiece, this.followingPiece);
+    }
+
+    public void dropCurrentPiece() {
+        this.nextPiece();
+    }
+
     public void setNextPieceListener(NextPieceListener listener) {
         this.nextPieceListener = listener;
     }
@@ -243,6 +256,11 @@ public class Game {
     public void setRotatePieceListener(RotatePieceListener listener) {
         this.rotatePieceListener = listener;
     }
+
+    public void setSwapPieceListener(SwapPieceListener listener) {
+        this.swapPieceListener = listener;
+    }
+
     /**
      * Get the grid model inside this game representing the game state of the board
      * @return game grid model
