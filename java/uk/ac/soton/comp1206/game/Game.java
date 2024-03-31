@@ -108,9 +108,6 @@ public class Game {
             this.nextPiece();
             this.afterPiecePlayed();
         }
-
-        logger.debug(grid.toString());
-        logger.debug("Current piece: " + this.getCurrentPiece().toGridString());
     }
 
     private void afterPiecePlayed() {

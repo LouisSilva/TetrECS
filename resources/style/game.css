@@ -25,24 +25,6 @@
     -fx-padding: 10;
 }
 
-.menuItem {
-    -fx-fill: white;
-    -fx-font-family: 'Orbitron';
-    -fx-font-size: 32px;
-    -fx-font-weight: 700;
-    -fx-border-color: black;
-    -fx-stroke: black;
-    -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
-}
-
-.menuItem:hover {
-    -fx-fill: yellow;
-}
-
-.menuItem.selected {
-    -fx-fill: yellow;
-}
-
 .bigtitle {
     -fx-fill: yellow;
     -fx-font-family: 'Orbitron';
@@ -57,7 +39,7 @@
     -fx-fill: white;
     -fx-text-fill: white;
     -fx-font-family: 'Orbitron';
-    -fx-font-size: 42px;
+    -fx-font-size: 36px;
     -fx-font-weight: 900;
     -fx-stroke: black;
     -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
@@ -226,4 +208,57 @@ TextField {
     -fx-alignment: center;
     -fx-pref-width: 200px;
     -fx-spacing: 10px;
+}
+
+.menu-header {
+    -fx-max-height: 300px;
+    -fx-min-height: 300px;
+    -fx-alignment: center;
+}
+
+.menu-button {
+    -fx-border: none;
+    -fx-border-color: black;
+    -fx-border-width: 0px;
+    -fx-background-color: transparent;
+    -fx-font-family: 'Orbitron';
+    -fx-fill: white;
+    -fx-font-size: 32px;
+    -fx-font-weight: 700;
+    -fx-stroke: black;
+    -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
+    -fx-text-fill: white;
+}
+
+.menu-button:hover {
+    -fx-fill: yellow;
+    -fx-text-fill: yellow;
+}
+
+.menu-button.selected {
+    -fx-fill: yellow;
+    -fx-text-fill: yellow;
+}
+
+.menu-button-container{
+    -fx-spacing: 20px;
+    -fx-alignment: center;
+}
+
+.menuItem {
+    -fx-fill: white;
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 32px;
+    -fx-font-weight: 700;
+    -fx-border-color: black;
+    -fx-stroke: black;
+    -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
+}
+
+.menuItem:hover {
+    -fx-fill: yellow;
+}
+
+.menuItem.selected {
+    -fx-fill: yellow;
 }

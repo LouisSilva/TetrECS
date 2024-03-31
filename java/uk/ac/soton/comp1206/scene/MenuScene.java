@@ -1,15 +1,21 @@
 package uk.ac.soton.comp1206.scene;
 
+import javafx.animation.RotateTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
+
+import java.util.Objects;
 
 /**
  * The main menu of the game. Provides a gateway to the rest of the game.
@@ -44,20 +50,25 @@ public class MenuScene extends BaseScene {
         var mainPane = new BorderPane();
         menuPane.getChildren().add(mainPane);
 
-        //Awful title
-        var title = new Text("TetrECS");
-        title.getStyleClass().add("title");
-        mainPane.setTop(title);
+        HBox header = new HBox();
+        header.getStyleClass().add("menu-header");
+        Image titleImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/TetrECS.png")));
+        ImageView titleImageView = new ImageView(titleImage);
+        titleImageView.setPreserveRatio(true);
+        titleImageView.setRotate(0);
+        titleImageView.setFitWidth(600);
+        header.getChildren().add(titleImageView);
+        mainPane.setTop(header);
 
-        var buttonContainer = new VBox(10);
-        buttonContainer.setAlignment(Pos.CENTER);
+        VBox buttonContainer = new VBox(10);
+        buttonContainer.getStyleClass().add("menu-button-container");
 
         var playButton = new Button("Play");
-        playButton.getStyleClass().add("menuItem");
-        var instructionsButton = new Button("Instructions");
-        instructionsButton.getStyleClass().add("menuItem");
+        playButton.getStyleClass().add("menu-button");
+        var instructionsButton = new Button("How to Play");
+        instructionsButton.getStyleClass().add("menu-button");
         var exitButton = new Button("Exit");
-        exitButton.getStyleClass().add("menuItem");
+        exitButton.getStyleClass().add("menu-button");
 
         buttonContainer.getChildren().addAll(playButton, instructionsButton, exitButton);
         mainPane.setBottom(buttonContainer);

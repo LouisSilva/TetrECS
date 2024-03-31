@@ -8,6 +8,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -92,11 +94,14 @@ public class ChallengeScene extends BaseScene {
         scoreBox.getStyleClass().add("stat-container");
         scoreHeader.getStyleClass().add("heading");
         scoreLabel.getStyleClass().add("score");
+        scoreLabel.setMinWidth(Label.USE_PREF_SIZE);
+        scoreBox.setMinSize(VBox.USE_PREF_SIZE, VBox.USE_PREF_SIZE);
         scoreBox.getChildren().addAll(scoreHeader, scoreLabel);
 
         // Challenge Mode title label
         Label titleLabel = new Label("Challenge Mode");
         titleLabel.getStyleClass().add("title");
+        titleLabel.setMinWidth(Label.USE_PREF_SIZE);
 
         // Lives label
         VBox livesBox = new VBox();
@@ -107,7 +112,9 @@ public class ChallengeScene extends BaseScene {
         livesBox.getStyleClass().add("stat-container");
         livesHeader.getStyleClass().add("heading");
         livesLabel.getStyleClass().add("lives");
+        livesLabel.setMinWidth(Label.USE_PREF_SIZE);
         livesBox.setAlignment(Pos.TOP_RIGHT);
+        livesBox.setMinSize(VBox.USE_PREF_SIZE, VBox.USE_PREF_SIZE);
         livesBox.getChildren().addAll(livesHeader, livesLabel);
 
         header.getChildren().addAll(scoreBox, titleLabel, livesBox);
@@ -155,6 +162,7 @@ public class ChallengeScene extends BaseScene {
                 (double) gameWindow.getWidth() / 10);
 
         currentPieceBoard.getStyleClass().add("gameBox");
+        currentPieceBoard.setOnBlockClick(this::currentPieceBoardClicked);
         followingPieceBoard.getStyleClass().add("gameBox");
 
         sidebar.getChildren().addAll(highScoreBox, levelBox, incomingLabel, currentPieceBoard, followingPieceBoard);
@@ -189,10 +197,10 @@ public class ChallengeScene extends BaseScene {
      */
     @Override
     public void initialise() {
-        logger.info("Initialising Challenge");
         game.start();
 
         getScene().setOnKeyPressed(this::handleKeyPressed);
+        getScene().setOnMouseClicked(this::handleRightClick);
     }
 
     private void nextPiece(GamePiece currentGamePiece, GamePiece followingGamePiece) {
@@ -202,6 +210,16 @@ public class ChallengeScene extends BaseScene {
 
     private void rotatePiece(GamePiece currentGamePiece) {
         this.currentPieceBoard.displayPiece(currentGamePiece);
+    }
+
+    private void handleRightClick(MouseEvent mouseEvent) {
+        MouseButton button = mouseEvent.getButton();
+
+        switch (button) {
+            case SECONDARY ->  {
+                this.game.rotateCurrentPiece();
+            }
+        }
     }
 
     private void handleKeyPressed(KeyEvent keyEvent) {
@@ -229,6 +247,10 @@ public class ChallengeScene extends BaseScene {
                 game.dropCurrentPiece();
             }
         }
+    }
+
+    private void currentPieceBoardClicked(GameBlock gameBlock) {
+        game.rotateCurrentPiece();
     }
 
     /**

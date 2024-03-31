@@ -23,7 +23,5 @@ public class PieceBoard extends GameBoard {
         this.grid.clearGrid();
         GameBlockCoordinate gridCentre = this.grid.getGridCentre();
         this.grid.playPiece(pieceToDisplay, gridCentre.getX(), gridCentre.getY());
-        logger.debug(this.toString());
-        logger.debug(this.grid.toString());
     }
 }
