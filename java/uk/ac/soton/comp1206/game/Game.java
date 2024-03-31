@@ -279,4 +279,6 @@ public class Game {
     public GamePiece getCurrentPiece() {
         return this.currentPiece;
     }
+
+    public GamePiece getFollowingPiece() { return this.followingPiece; }
 }

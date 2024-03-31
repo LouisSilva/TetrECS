@@ -55,6 +55,17 @@
     -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
 }
 
+.small-text {
+    -fx-fill: white;
+    -fx-text-fill: white;
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 10px;
+    -fx-font-weight: 400;
+    -fx-stroke: black;
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+}
+
 .score {
     -fx-fill: yellow;
     -fx-text-fill: yellow;
@@ -188,12 +199,6 @@ TextField {
 
 .myname {
     -fx-font-weight: 700;
-}
-
-.instructions {
-    -fx-font-size: 10px;
-    -fx-font-family: 'Orbitron';
-    -fx-fill: white;
 }
 
 .stat-container {

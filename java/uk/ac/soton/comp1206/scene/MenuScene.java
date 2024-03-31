@@ -65,12 +65,14 @@ public class MenuScene extends BaseScene {
 
         var playButton = new Button("Play");
         playButton.getStyleClass().add("menu-button");
+        var multiplayerButton = new Button("Multiplayer");
+        multiplayerButton.getStyleClass().add("menu-button");
         var instructionsButton = new Button("How to Play");
         instructionsButton.getStyleClass().add("menu-button");
         var exitButton = new Button("Exit");
         exitButton.getStyleClass().add("menu-button");
 
-        buttonContainer.getChildren().addAll(playButton, instructionsButton, exitButton);
+        buttonContainer.getChildren().addAll(playButton, multiplayerButton, instructionsButton, exitButton);
         mainPane.setBottom(buttonContainer);
         BorderPane.setAlignment(buttonContainer, Pos.CENTER);
 
