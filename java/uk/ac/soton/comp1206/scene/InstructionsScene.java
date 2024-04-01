@@ -81,17 +81,14 @@ public class InstructionsScene extends BaseScene {
         gamePiecesLabel.getStyleClass().add("heading");
 
         // Add dynamic piece boards
-        GridPane pieceBoardGrid = new GridPane();
-        pieceBoardGrid.setAlignment(Pos.CENTER);
-        pieceBoardGrid.setHgap(10);
-        pieceBoardGrid.setVgap(10);
-        pieceBoardGrid.setPadding(new Insets(10, 10, 10, 10));
+        VBox pieceBoardContainer = new VBox();
+        pieceBoardContainer.setAlignment(Pos.CENTER);
 
-        double pieceBoardWidth = (double) this.gameWindow.getWidth() / 12;
-        double pieceBoardHeight = (double) this.gameWindow.getHeight() / 12;
+        double pieceBoardWidth = (double) this.gameWindow.getWidth() / 10;
+        double pieceBoardHeight = (double) this.gameWindow.getHeight() / 10;
 
-        int rows = 3;
-        int cols = 5;
+        Random random = new Random();
+        int[] pieceBoardsPerRow = {8, 7};
 
         // Get a HashSet of all the game pieces to display
         HashSet<Integer> gamePiecesSet = new HashSet<>();
@@ -100,10 +97,13 @@ public class InstructionsScene extends BaseScene {
         }
 
         // Loop over all the rows and columns to add the piece boards
-        Random random = new Random();
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
+        for (int numPieceBoards : pieceBoardsPerRow) {
+            HBox rowContainer = new HBox();
+            rowContainer.setAlignment(Pos.CENTER);
+
+            for (int col=0; col < numPieceBoards; col++) {
                 PieceBoard pieceBoard = new PieceBoard(3, 3, pieceBoardWidth, pieceBoardHeight);
+                pieceBoard.getStyleClass().add("gameBox");
 
                 // Picks the random piece to display
                 if (!gamePiecesSet.isEmpty()) {
@@ -120,14 +120,14 @@ public class InstructionsScene extends BaseScene {
 
                     GamePiece gamePieceToDisplay = GamePiece.createPiece(gamePieceIndex);
                     pieceBoard.displayPiece(gamePieceToDisplay);
+                    rowContainer.getChildren().add(pieceBoard);
                 }
-
-                pieceBoardGrid.add(pieceBoard, col, row);
             }
+
+            pieceBoardContainer.getChildren().add(rowContainer);
         }
 
-
-        centreBox.getChildren().addAll(instructionsImageView, gamePiecesLabel, pieceBoardGrid);
+        centreBox.getChildren().addAll(instructionsImageView, gamePiecesLabel, pieceBoardContainer);
         mainPane.setCenter(centreBox);
     }
 
