@@ -5,22 +5,16 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Stop;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
@@ -31,9 +25,10 @@ import uk.ac.soton.comp1206.component.GameBoard;
 import uk.ac.soton.comp1206.component.PieceBoard;
 import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.game.GamePiece;
-import uk.ac.soton.comp1206.game.Grid;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
+
+import java.util.Set;
 
 /**
  * The Single Player challenge scene. Holds the UI for the single player challenge mode in the game.
@@ -69,6 +64,11 @@ public class ChallengeScene extends BaseScene {
      * The UI copy of the game's score multiplier
      */
     private final IntegerProperty multiplier = new SimpleIntegerProperty(1);
+
+    /**
+     * The main GameBoard component which the game is played on
+     */
+    private GameBoard gameBoard;
 
     /**
      * The PieceBoard component that holds the current piece
@@ -121,9 +121,9 @@ public class ChallengeScene extends BaseScene {
         challengePane.getChildren().add(mainPane);
 
         // Build game board
-        var board = new GameBoard(game.getGrid(), (double) gameWindow.getWidth() / 2, (double) gameWindow.getWidth() / 2);
-        board.getStyleClass().add("gameBox");
-        board.setOnBlockClick(this::blockClicked);
+        gameBoard = new GameBoard(game.getGrid(), (double) gameWindow.getWidth() / 2, (double) gameWindow.getWidth() / 2);
+        gameBoard.getStyleClass().add("gameBox");
+        gameBoard.setOnBlockClick(this::blockClicked);
 
         // Build header
         HBox header = new HBox();
@@ -220,7 +220,7 @@ public class ChallengeScene extends BaseScene {
         footer.getChildren().add(timerBar);
 
         mainPane.setBottom(footer);
-        mainPane.setCenter(board);
+        mainPane.setCenter(gameBoard);
         mainPane.setTop(header);
         mainPane.setRight(sidebar);
 
@@ -245,6 +245,7 @@ public class ChallengeScene extends BaseScene {
         game.setNextPieceListener(this::nextPiece);
         game.setRotatePieceListener(this::rotatePiece);
         game.setGameLoopListener(this::resetTimerBar);
+        game.setLineClearedListener(this::fadeOut);
     }
 
     /**
@@ -269,7 +270,6 @@ public class ChallengeScene extends BaseScene {
 
         timerBar.setWidth(gameWindow.getWidth());
         timerBar.setFill(Color.GREEN);
-        double duration = game.getTimerDelay() / 1000.0;
 
         // Create timeline with keyframes
         timeline = new Timeline(
@@ -307,9 +307,7 @@ public class ChallengeScene extends BaseScene {
         MouseButton button = mouseEvent.getButton();
 
         switch (button) {
-            case SECONDARY ->  {
-                this.game.rotateCurrentPiece();
-            }
+            case SECONDARY -> this.game.rotateCurrentPiece();
         }
     }
 
@@ -326,21 +324,13 @@ public class ChallengeScene extends BaseScene {
                 gameWindow.loadScene(new MenuScene(gameWindow));
             }
 
-            case Q, Z, OPEN_BRACKET -> {
-                game.rotateCurrentPiece(3);
-            }
+            case Q, Z, OPEN_BRACKET -> game.rotateCurrentPiece(3);
 
-            case E, C, CLOSE_BRACKET -> {
-                game.rotateCurrentPiece();
-            }
+            case E, C, CLOSE_BRACKET -> game.rotateCurrentPiece();
 
-            case SPACE, R -> {
-                game.swapCurrentPiece();
-            }
+            case SPACE, R -> game.swapCurrentPiece();
 
-            case ENTER, X -> {
-                game.dropCurrentPiece();
-            }
+            case ENTER, X -> game.dropCurrentPiece();
         }
     }
 
@@ -358,6 +348,14 @@ public class ChallengeScene extends BaseScene {
      */
     private void blockClicked(GameBlock gameBlock) {
         game.blockClicked(gameBlock);
+    }
+
+    /**
+     * Fades out the the game blocks corresponding to the given game block coordinates
+     * @param gameBlockCoordinates the coordinates of the game blocks to fade out
+     */
+    private void fadeOut(Set<GameBlockCoordinate> gameBlockCoordinates) {
+        gameBoard.fadeOut(gameBlockCoordinates);
     }
 
     /**

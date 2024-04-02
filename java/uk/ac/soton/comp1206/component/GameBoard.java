@@ -1,19 +1,20 @@
 package uk.ac.soton.comp1206.component;
 
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.event.BlockClickedListener;
 import uk.ac.soton.comp1206.game.Grid;
 
+import java.util.Set;
+
 /**
  * A GameBoard is a visual component to represent the visual GameBoard.
  * It extends a GridPane to hold a grid of GameBlocks.
- *
+ * <p>
  * The GameBoard can hold an internal grid of it's own, for example, for displaying an upcoming block. It also be
  * linked to an external grid, for the main game board.
- *
+ * <p>
  * The GameBoard is only a visual representation and should not contain game logic or model logic in it, which should
  * take place in the Grid.
  */
@@ -126,10 +127,11 @@ public class GameBoard extends GridPane {
 
     /**
      * Create a block at the given x and y position in the GameBoard
+     *
      * @param x column
      * @param y row
      */
-    protected GameBlock createBlock(int x, int y) {
+    protected void createBlock(int x, int y) {
         var blockWidth = width / this.getCols();
         var blockHeight = height / this.getRows();
 
@@ -146,9 +148,8 @@ public class GameBoard extends GridPane {
         block.bind(grid.getGridProperty(x,y));
 
         // Add a mouse click handler to the block to trigger GameBoard blockClicked method
-        block.setOnMouseClicked((e) -> blockClicked(e, block));
+        block.setOnMouseClicked((e) -> blockClicked(block));
 
-        return block;
     }
 
     /**
@@ -161,12 +162,22 @@ public class GameBoard extends GridPane {
 
     /**
      * Triggered when a block is clicked. Call the attached listener.
-     * @param event mouse event
      * @param block block clicked on
      */
-    protected void blockClicked(MouseEvent event, GameBlock block) {
+    protected void blockClicked(GameBlock block) {
         if (blockClickedListener != null) {
             blockClickedListener.blockClicked(block);
+        }
+    }
+
+    /**
+     * Fades out the blocks in the given game block coordinates
+     * @param blocks the set of blocks to fade out
+     */
+    public void fadeOut(Set<GameBlockCoordinate> blocks) {
+        for (GameBlockCoordinate coordinate : blocks) {
+            GameBlock block = getBlock(coordinate.getX(), coordinate.getY());
+            if (block != null) block.fadeOut();
         }
     }
 

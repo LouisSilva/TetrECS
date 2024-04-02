@@ -85,6 +85,11 @@ public class Game {
     private GameLoopListener gameLoopListener;
 
     /**
+     * The line cleared listener for the ui game board
+     */
+    private LineClearedListener lineClearedListener;
+
+    /**
      * The scheduler which is used as a timer for the game loop
      */
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -155,6 +160,10 @@ public class Game {
 
         long timerDelay = getTimerDelay();
         gameLoopFuture = scheduler.scheduleAtFixedRate(gameLoopTask, timerDelay, timerDelay, TimeUnit.MILLISECONDS);
+
+        // Notify listener
+        if (this.gameLoopListener != null)
+            gameLoopListener.onGameLoop();
     }
 
     /**
@@ -163,6 +172,7 @@ public class Game {
     private void gameLoop() {
         // Handle the game loop stuff in the fx thread
         Platform.runLater(() -> {
+            logger.info("Game Loop!");
             lives.set(lives.get() - 1);
 
             // Start new game if all lives are gone
@@ -175,12 +185,8 @@ public class Game {
                 this.multiplier.set(1);
             }
 
-            // Notify listener
-            if (this.gameLoopListener != null)
-                gameLoopListener.onGameLoop();
+            this.resetTimer();
         });
-
-        this.resetTimer();
     }
 
     /**
@@ -232,6 +238,7 @@ public class Game {
         // Play piece if possible
         if (grid.playPiece(this.getCurrentPiece(), x, y)) {
             this.nextPiece();
+            this.resetTimer();
             this.gameLoopListener.onGameLoop();
             this.afterPiecePlayed();
         }
@@ -284,10 +291,11 @@ public class Game {
             grid.updateGridValue(block.getX(), block.getY(), 0);
         }
 
-        // Update score and level
+        // Update score, level and call line cleared listener
         if (numOfLinesCleared >= 1 && !blocksToClear.isEmpty()) {
             this.calculateNewScore(numOfLinesCleared, blocksToClear.size());
             this.calculateNewLevel();
+            lineClearedListener.onLineCleared(blocksToClear);
         }
 
         // Update multiplier
@@ -402,6 +410,14 @@ public class Game {
      */
     public void setGameLoopListener(GameLoopListener listener) {
         this.gameLoopListener = listener;
+    }
+
+    /**
+     * Sets the given LineClearedListener
+     * @param listener the LineClearedListener instance
+     */
+    public void setLineClearedListener(LineClearedListener listener) {
+        this.lineClearedListener = listener;
     }
 
     /**
