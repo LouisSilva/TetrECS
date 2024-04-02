@@ -1,7 +1,13 @@
 package uk.ac.soton.comp1206.scene;
 
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -11,6 +17,12 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
+import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
@@ -28,16 +40,55 @@ import uk.ac.soton.comp1206.ui.GameWindow;
  */
 public class ChallengeScene extends BaseScene {
 
+    /**
+     * Logger for debugging
+     */
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
+
+    /**
+     * The game object that this scene represents visually
+     */
     private Game game;
 
+    /**
+     * The UI copy of the game's score
+     */
     private final IntegerProperty score = new SimpleIntegerProperty(0);
+
+    /**
+     * The UI copy of the game level
+     */
     private final IntegerProperty level = new SimpleIntegerProperty(0);
+
+    /**
+     * The UI copy of the game lives
+     */
     private final IntegerProperty lives = new SimpleIntegerProperty(3);
+
+    /**
+     * The UI copy of the game's score multiplier
+     */
     private final IntegerProperty multiplier = new SimpleIntegerProperty(1);
 
+    /**
+     * The PieceBoard component that holds the current piece
+     */
     private PieceBoard currentPieceBoard;
+
+    /**
+     * The PieceBoard component that holds the following piece
+     */
     private PieceBoard followingPieceBoard;
+
+    /**
+     * The rectangle representing the timer
+     */
+    private Rectangle timerBar;
+
+    /**
+     * The Timeline of the timer which handles all the keyframes for smoothly changing the timerBar scale and colour
+     */
+    private Timeline timeline;
 
 
     /**
@@ -68,11 +119,6 @@ public class ChallengeScene extends BaseScene {
 
         BorderPane mainPane = new BorderPane();
         challengePane.getChildren().add(mainPane);
-
-        // Build footer
-        StackPane footer = new StackPane();
-        ProgressBar progressBar = new ProgressBar();
-        footer.getChildren().addAll(progressBar);
 
         // Build game board
         var board = new GameBoard(game.getGrid(), (double) gameWindow.getWidth() / 2, (double) gameWindow.getWidth() / 2);
@@ -167,10 +213,18 @@ public class ChallengeScene extends BaseScene {
 
         sidebar.getChildren().addAll(highScoreBox, levelBox, incomingLabel, currentPieceBoard, followingPieceBoard);
 
+        // Build footer with timer
+        StackPane footer = new StackPane();
+        this.timerBar = new Rectangle(0, 20);
+        this.timerBar.setFill(Color.GREEN);
+        footer.getChildren().add(timerBar);
+
         mainPane.setBottom(footer);
         mainPane.setCenter(board);
         mainPane.setTop(header);
         mainPane.setRight(sidebar);
+
+        this.resetTimerBar();
     }
 
     /**
@@ -190,6 +244,7 @@ public class ChallengeScene extends BaseScene {
 
         game.setNextPieceListener(this::nextPiece);
         game.setRotatePieceListener(this::rotatePiece);
+        game.setGameLoopListener(this::resetTimerBar);
     }
 
     /**
@@ -203,15 +258,51 @@ public class ChallengeScene extends BaseScene {
         getScene().setOnMouseClicked(this::handleRightClick);
     }
 
+    /**
+     * Resets the timer bar
+     */
+    private void resetTimerBar() {
+        // Reset any existing timeline
+        if (timeline != null) {
+            timeline.stop();
+        }
+
+        timerBar.setWidth(gameWindow.getWidth());
+        timerBar.setFill(Color.GREEN);
+        double duration = game.getTimerDelay() / 1000.0;
+
+        // Create timeline with keyframes
+        timeline = new Timeline(
+                new KeyFrame(Duration.ZERO, new KeyValue(timerBar.widthProperty(), gameWindow.getWidth())),
+                new KeyFrame(Duration.seconds((game.getTimerDelay() / 1000.0) * 0.7), e -> timerBar.setFill(Color.RED)),
+                new KeyFrame(Duration.seconds(game.getTimerDelay() / 1000.0), new KeyValue(timerBar.widthProperty(), 0))
+        );
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
+    }
+
+    /**
+     * Updates the current and following piece boards with the new pieces
+     * @param currentGamePiece the new current piece (usually the old following piece)
+     * @param followingGamePiece the new following piece
+     */
     private void nextPiece(GamePiece currentGamePiece, GamePiece followingGamePiece) {
         this.currentPieceBoard.displayPiece(currentGamePiece);
         this.followingPieceBoard.displayPiece(followingGamePiece);
     }
 
+    /**
+     * Rotates the current piece
+     * @param currentGamePiece the new piece that has already been rotated by the game object
+     */
     private void rotatePiece(GamePiece currentGamePiece) {
         this.currentPieceBoard.displayPiece(currentGamePiece);
     }
 
+    /**
+     * Handles what to do when there is a right click
+     * @param mouseEvent the mouse event generated by the click
+     */
     private void handleRightClick(MouseEvent mouseEvent) {
         MouseButton button = mouseEvent.getButton();
 
@@ -222,6 +313,10 @@ public class ChallengeScene extends BaseScene {
         }
     }
 
+    /**
+     * Handles what to do when a key is pressed
+     * @param keyEvent the key event generated by the pressed key
+     */
     private void handleKeyPressed(KeyEvent keyEvent) {
         KeyCode keyCode = keyEvent.getCode();
 
@@ -249,6 +344,10 @@ public class ChallengeScene extends BaseScene {
         }
     }
 
+    /**
+     * Tells the game object to rotate the current piece when a block in the piece is clicked
+     * @param gameBlock the game block that was clicked
+     */
     private void currentPieceBoardClicked(GameBlock gameBlock) {
         game.rotateCurrentPiece();
     }

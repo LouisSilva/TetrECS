@@ -1,11 +1,15 @@
 package uk.ac.soton.comp1206.game;
 
-import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
@@ -45,13 +49,50 @@ public class Game {
      */
     private GamePiece followingPiece;
 
+    /**
+     * The score
+     */
     public final IntegerProperty score;
+
+    /**
+     * The level
+     */
     public final IntegerProperty level;
+
+    /**
+     * The lives the player has left in the game
+     */
     public final IntegerProperty lives;
+
+    /**
+     * The score multiplier
+     */
     public final IntegerProperty multiplier;
 
+    /**
+     * The next piece listener for the ui GameBoards
+     */
     private NextPieceListener nextPieceListener;
+
+    /**
+     * The rotate piece listener for the ui GameBoards
+     */
     private RotatePieceListener rotatePieceListener;
+
+    /**
+     * The game loop listener for the ui timer
+     */
+    private GameLoopListener gameLoopListener;
+
+    /**
+     * The scheduler which is used as a timer for the game loop
+     */
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+    /**
+     * The game loop future which is used for resetting and shutting down the timer properly
+     */
+    private Future<?> gameLoopFuture;
 
     /**
      * Create a new game with the specified rows and columns. Creates a corresponding grid model.
@@ -85,13 +126,98 @@ public class Game {
     public void initialiseGame() {
         logger.info("Initialising game");
 
+        this.score.set(0);
+        this.level.set(0);
+        this.lives.set(3);
+        this.multiplier.set(1);
+        this.grid.clearGrid();
+
         this.currentPiece = this.spawnPiece();
         this.followingPiece = this.spawnPiece();
         this.nextPieceListener.nextPiece(this.currentPiece, this.followingPiece);
+
+        this.startGameLoop();
     }
 
+    /**
+     * Starts the game loop
+     */
+    private void startGameLoop() {
+        if (gameLoopFuture != null && !gameLoopFuture.isDone()) {
+            gameLoopFuture.cancel(true);
+        }
+
+        // Start game loop
+        Runnable gameLoopTask = () -> {
+            if (Thread.currentThread().isInterrupted()) return;
+            gameLoop();
+        };
+
+        long timerDelay = getTimerDelay();
+        gameLoopFuture = scheduler.scheduleAtFixedRate(gameLoopTask, timerDelay, timerDelay, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Handles what happens when the game loop timer goes to zero
+     */
+    private void gameLoop() {
+        // Handle the game loop stuff in the fx thread
+        Platform.runLater(() -> {
+            lives.set(lives.get() - 1);
+
+            // Start new game if all lives are gone
+            if (lives.get() <= 0) {
+                this.start();
+            }
+
+            else {
+                this.nextPiece();
+                this.multiplier.set(1);
+            }
+
+            // Notify listener
+            if (this.gameLoopListener != null)
+                gameLoopListener.onGameLoop();
+        });
+
+        this.resetTimer();
+    }
+
+    /**
+     * Resets the game loop timer
+     */
+    private void resetTimer() {
+        if (gameLoopFuture != null) {
+            gameLoopFuture.cancel(true);
+        }
+
+        this.startGameLoop();
+    }
+
+    /**
+     * Shuts down the game loop properly
+     */
+    private void shutdownGameLoop() {
+        if (gameLoopFuture != null) {
+            gameLoopFuture.cancel(true);
+        }
+
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+        }
+    }
+
+    /**
+     * Exits the game
+     */
     public void exitGame() {
         logger.info("Exiting game");
+        this.shutdownGameLoop();
     }
 
     /**
@@ -106,10 +232,14 @@ public class Game {
         // Play piece if possible
         if (grid.playPiece(this.getCurrentPiece(), x, y)) {
             this.nextPiece();
+            this.gameLoopListener.onGameLoop();
             this.afterPiecePlayed();
         }
     }
 
+    /**
+     * Calculates whether line/s should be cleared, and the resulting score and multiplier after
+     */
     private void afterPiecePlayed() {
         HashSet<GameBlockCoordinate> blocksToClear = new HashSet<>();
         int numOfLinesCleared = 0;
@@ -222,12 +352,19 @@ public class Game {
         }
     }
 
+    /**
+     * Performs the given number of rotations on the current piece
+     * @param rotations number of rotations to complete
+     */
     public void rotateCurrentPiece(int rotations) {
         for (int i=0; i < rotations; i++) {
             this.rotateCurrentPiece();
         }
     }
 
+    /**
+     * Swaps the current piece with the following piece
+     */
     public void swapCurrentPiece() {
         GamePiece tempPiece = this.currentPiece;
         this.currentPiece = this.followingPiece;
@@ -236,16 +373,43 @@ public class Game {
         if (this.nextPieceListener != null) this.nextPieceListener.nextPiece(this.currentPiece, this.followingPiece);
     }
 
+    /**
+     * A public method for accessing the game's nextPiece method
+     */
     public void dropCurrentPiece() {
         this.nextPiece();
     }
 
+    /**
+     * Sets the given NextPieceListener
+     * @param listener the NextPieceListener instance
+     */
     public void setNextPieceListener(NextPieceListener listener) {
         this.nextPieceListener = listener;
     }
 
+    /**
+     * Sets the given RotatePieceListener
+     * @param listener the RotatePieceListener instance
+     */
     public void setRotatePieceListener(RotatePieceListener listener) {
         this.rotatePieceListener = listener;
+    }
+
+    /**
+     * Sets the given GameLoopListener
+     * @param listener the GameLoopListener instance
+     */
+    public void setGameLoopListener(GameLoopListener listener) {
+        this.gameLoopListener = listener;
+    }
+
+    /**
+     * Calculates the timer delay based on the current level of the game
+     * @return the timer delay in milliseconds
+     */
+    public long getTimerDelay() {
+        return Math.max(2500, 12000 - 500 * this.level.get());
     }
 
     /**
@@ -279,6 +443,4 @@ public class Game {
     public GamePiece getCurrentPiece() {
         return this.currentPiece;
     }
-
-    public GamePiece getFollowingPiece() { return this.followingPiece; }
 }
