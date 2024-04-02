@@ -1,8 +1,10 @@
 package uk.ac.soton.comp1206.component;
 
-import javafx.animation.FadeTransition;
+import javafx.animation.*;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.paint.*;
@@ -73,6 +75,11 @@ public class GameBlock extends Canvas {
      */
     private final IntegerProperty value = new SimpleIntegerProperty(0);
 
+    private boolean inFadeOutAnimation = false;
+
+    private final ObjectProperty<Color> fadeAnimationColour = new SimpleObjectProperty<>(Color.WHITE);
+    private final ObjectProperty<Double> fadeAnimationOpacity = new SimpleObjectProperty<>(1.0);
+
     private enum EnterOrExit {
         ENTER,
         EXIT
@@ -101,6 +108,8 @@ public class GameBlock extends Canvas {
 
         // When the value property is updated, call the internal updateValue method
         value.addListener(this::updateValue);
+        fadeAnimationColour.addListener((observable, oldValue, newValue) -> this.paintColorBasic(newValue));
+        fadeAnimationOpacity.addListener((observable, oldValue, newValue) -> this.setOpacity(newValue));
 
         // Set hover effect
         this.setOnMouseEntered(e -> this.onHover(EnterOrExit.ENTER));
@@ -112,6 +121,7 @@ public class GameBlock extends Canvas {
      * @param enterOrExit whether the mouse entered the block or exited
      */
     private void onHover(EnterOrExit enterOrExit) {
+        if (this.inFadeOutAnimation) return;
 
         switch (enterOrExit) {
             case ENTER -> {
@@ -127,13 +137,32 @@ public class GameBlock extends Canvas {
      * Plays the fade out animation for the block
      */
     public void fadeOut() {
-        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(1), this);
-        fadeTransition.setFromValue(1.0);
-        fadeTransition.setToValue(0);
-        fadeTransition.setOnFinished(e -> {
-            this.value.set(0);
-            this.paint();
+        if (inFadeOutAnimation) return;
+
+        this.inFadeOutAnimation = true;
+        this.paintEmpty();
+        this.paintHover();
+
+        Timeline timeline = new Timeline();
+        double toGreenDuration = 0.2;
+        double toWhiteDuration = 0.6;
+
+        // Create key frames
+        KeyFrame toGreen = new KeyFrame(Duration.seconds(toGreenDuration),
+                new KeyValue(this.fadeAnimationColour, Color.GREEN),
+                new KeyValue(this.fadeAnimationOpacity, 0.7));
+        KeyFrame toWhite = new KeyFrame(Duration.seconds(toWhiteDuration),
+                new KeyValue(this.fadeAnimationColour, Color.WHITE, Interpolator.EASE_OUT),
+                new KeyValue(this.fadeAnimationOpacity, 0.0, Interpolator.EASE_IN));
+
+        timeline.getKeyFrames().addAll(toGreen, toWhite);
+
+        timeline.setOnFinished(e -> {
+            this.inFadeOutAnimation = false;
+            paint();
         });
+
+        timeline.play();
     }
 
     /**
@@ -143,6 +172,7 @@ public class GameBlock extends Canvas {
      * @param newValue the new value
      */
     private void updateValue(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+        if (this.inFadeOutAnimation) return;
         paint();
     }
 
@@ -225,6 +255,25 @@ public class GameBlock extends Canvas {
         // Bottom left
         gc.setFill(colour.deriveColor(0, 1, 1.2, 1));
         gc.fillPolygon(new double[]{0, width, 0}, new double[]{height, height, 0}, 3);
+
+        // Border
+        gc.setStroke(Color.WHITE.deriveColor(0, 1, 0.6, 0.8));
+        gc.strokeRect(0, 0, width, height);
+    }
+
+    /**
+     * Paint this canvas with the given colour, but with no nice looking tiling
+     * @param colour the colour to paint
+     */
+    private void paintColorBasic(Color colour) {
+        var gc = getGraphicsContext2D();
+
+        //Clear
+        gc.clearRect(0,0,width,height);
+
+        //Colour fill
+        gc.setFill(colour);
+        gc.fillRect(0,0, width, height);
 
         // Border
         gc.setStroke(Color.WHITE.deriveColor(0, 1, 0.6, 0.8));
