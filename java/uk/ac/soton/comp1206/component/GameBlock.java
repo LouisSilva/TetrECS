@@ -75,11 +75,29 @@ public class GameBlock extends Canvas {
      */
     private final IntegerProperty value = new SimpleIntegerProperty(0);
 
+    /**
+     * Keeps track of whether the block is in the fade out animation, so other paint functions that are called dont run
+     */
     private boolean inFadeOutAnimation = false;
 
+    /**
+     * Keeps track of whether the block is part of a game board, because if not then the hover effect should not happen
+     */
+    public boolean isPartOfGameBoard = false;
+
+    /**
+     * The animated colour used for the fade out
+     */
     private final ObjectProperty<Color> fadeAnimationColour = new SimpleObjectProperty<>(Color.WHITE);
+
+    /**
+     * The animated opacity used for the fade out
+     */
     private final ObjectProperty<Double> fadeAnimationOpacity = new SimpleObjectProperty<>(1.0);
 
+    /**
+     * An enum used to determine whether a mouse hover event is for the mouse exiting or entering the block
+     */
     private enum EnterOrExit {
         ENTER,
         EXIT
@@ -114,6 +132,8 @@ public class GameBlock extends Canvas {
         // Set hover effect
         this.setOnMouseEntered(e -> this.onHover(EnterOrExit.ENTER));
         this.setOnMouseExited(e -> this.onHover(EnterOrExit.EXIT));
+
+        this.isPartOfGameBoard = !(gameBoard instanceof PieceBoard);
     }
 
     /**
@@ -122,6 +142,7 @@ public class GameBlock extends Canvas {
      */
     private void onHover(EnterOrExit enterOrExit) {
         if (this.inFadeOutAnimation) return;
+        if (!this.isPartOfGameBoard) return;
 
         switch (enterOrExit) {
             case ENTER -> {

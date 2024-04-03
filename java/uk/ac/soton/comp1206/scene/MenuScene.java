@@ -50,6 +50,7 @@ public class MenuScene extends BaseScene {
         var mainPane = new BorderPane();
         menuPane.getChildren().add(mainPane);
 
+        // Set title image
         HBox header = new HBox();
         header.getStyleClass().add("menu-header");
         Image titleImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/TetrECS.png")));
@@ -63,6 +64,7 @@ public class MenuScene extends BaseScene {
         VBox buttonContainer = new VBox(10);
         buttonContainer.getStyleClass().add("menu-button-container");
 
+        // Make buttons
         var playButton = new Button("Play");
         playButton.getStyleClass().add("menu-button");
         var multiplayerButton = new Button("Multiplayer");

@@ -28,7 +28,12 @@ import uk.ac.soton.comp1206.game.GamePiece;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
-import java.util.Set;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
  * The Single Player challenge scene. Holds the UI for the single player challenge mode in the game.
@@ -38,7 +43,7 @@ public class ChallengeScene extends BaseScene {
     /**
      * Logger for debugging
      */
-    private static final Logger logger = LogManager.getLogger(MenuScene.class);
+    private static final Logger logger = LogManager.getLogger(ChallengeScene.class);
 
     /**
      * The game object that this scene represents visually
@@ -66,6 +71,11 @@ public class ChallengeScene extends BaseScene {
     private final IntegerProperty multiplier = new SimpleIntegerProperty(1);
 
     /**
+     * The UI copy of the game's local highscore
+     */
+    private final IntegerProperty highscore = new SimpleIntegerProperty(0);
+
+    /**
      * The main GameBoard component which the game is played on
      */
     private GameBoard gameBoard;
@@ -79,6 +89,11 @@ public class ChallengeScene extends BaseScene {
      * The PieceBoard component that holds the following piece
      */
     private PieceBoard followingPieceBoard;
+
+    /**
+     * The highscore label, needed so I can rebind the value at a later date
+     */
+    private Label highScoreLabel;
 
     /**
      * The rectangle representing the timer
@@ -114,7 +129,7 @@ public class ChallengeScene extends BaseScene {
         var challengePane = new StackPane();
         challengePane.setMaxWidth(gameWindow.getWidth());
         challengePane.setMaxHeight(gameWindow.getHeight());
-        challengePane.getStyleClass().add("menu-background");
+        challengePane.getStyleClass().add("challenge-background");
         root.getChildren().add(challengePane);
 
         BorderPane mainPane = new BorderPane();
@@ -172,9 +187,9 @@ public class ChallengeScene extends BaseScene {
         // Highscore label
         VBox highScoreBox = new VBox();
         Label highScoreHeader = new Label();
-        Label highScoreLabel = new Label();
+        highScoreLabel = new Label();
         highScoreHeader.textProperty().set("High Score");
-        highScoreLabel.textProperty().bind(score.asString("%d"));
+        highScoreLabel.textProperty().bind(score.asString("%d")); // Bind it to score initially
         highScoreBox.getStyleClass().add("stat-container");
         highScoreHeader.getStyleClass().add("heading");
         highScoreLabel.getStyleClass().add("hiscore");
@@ -246,6 +261,7 @@ public class ChallengeScene extends BaseScene {
         game.setRotatePieceListener(this::rotatePiece);
         game.setGameLoopListener(this::resetTimerBar);
         game.setLineClearedListener(this::fadeOut);
+        game.setEndGameListener(this::handleEndGame);
     }
 
     /**
@@ -257,6 +273,52 @@ public class ChallengeScene extends BaseScene {
 
         getScene().setOnKeyPressed(this::handleKeyPressed);
         getScene().setOnMouseClicked(this::handleRightClick);
+
+        getInitialHighScore();
+    }
+
+    /**
+     * Gets the initial highscore and displays it
+     */
+    private void getInitialHighScore() {
+        String userDir = System.getProperty("user.dir");
+        File scoresFile = Paths.get(userDir, "data", "scores.txt").toFile();
+
+        // Handle if the scores file does not exist
+        if (!scoresFile.exists()) return;
+
+        // Load the high score
+        BufferedReader reader = null;
+        try {
+            // Read file
+            reader = new BufferedReader(new FileReader(scoresFile));
+            List<ScoresScene.Score> scores = new ArrayList<>();
+            String line;
+
+            // Loop over all the scores
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(":");
+                if (parts.length == 2) {
+                    scores.add(new ScoresScene.Score(parts[0], Integer.parseInt(parts[1])));
+                }
+            }
+
+            // Get the one with the highest score
+            highscore.set(Collections.min(scores, Comparator.comparingInt(ScoresScene.Score::getScore)).getScore());
+
+        } catch (IOException e) {
+            logger.info("Could not open scores file: " + scoresFile.getPath());
+            logger.debug(e);
+            return;
+
+            // Close reader
+        } finally {
+            try {
+                if (reader != null) reader.close();
+            } catch (IOException e) {
+                logger.debug("Error closing reader", e);
+            }
+        }
     }
 
     /**
@@ -350,12 +412,23 @@ public class ChallengeScene extends BaseScene {
         game.blockClicked(gameBlock);
     }
 
+    private void handleEndGame(Game finalGameObject) {
+        this.gameWindow.loadScene(new ScoresScene(this.gameWindow, finalGameObject));
+    }
+
     /**
      * Fades out the the game blocks corresponding to the given game block coordinates
+     * After it will update the highscore value if needed
      * @param gameBlockCoordinates the coordinates of the game blocks to fade out
      */
     private void fadeOut(Set<GameBlockCoordinate> gameBlockCoordinates) {
         gameBoard.fadeOut(gameBlockCoordinates);
+
+        // Check if the highscore has been broken, if so then update it
+        if (game.score.getValue() > highscore.getValue()) {
+            highScoreLabel.textProperty().unbind();
+            highScoreLabel.textProperty().bind(score.asString("%d"));
+        }
     }
 
     /**

@@ -90,6 +90,11 @@ public class Game {
     private LineClearedListener lineClearedListener;
 
     /**
+     * The end game listener for the challenge scene
+     */
+    private EndGameListener endGameListener;
+
+    /**
      * The scheduler which is used as a timer for the game loop
      */
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -175,17 +180,18 @@ public class Game {
             logger.info("Game Loop!");
             lives.set(lives.get() - 1);
 
-            // Start new game if all lives are gone
+            // End game if all lives are gone
             if (lives.get() <= 0) {
-                this.start();
+                this.shutdownGameLoop();
+                if (this.endGameListener != null) this.endGameListener.endGame(this);
+                else this.start();
             }
 
             else {
                 this.nextPiece();
                 this.multiplier.set(1);
+                this.resetTimer();
             }
-
-            this.resetTimer();
         });
     }
 
@@ -421,10 +427,19 @@ public class Game {
     }
 
     /**
+     * Sets the given EndGameListener
+     * @param listener the EndGameListener instance
+     */
+    public void setEndGameListener(EndGameListener listener) {
+        this.endGameListener = listener;
+    }
+
+    /**
      * Calculates the timer delay based on the current level of the game
      * @return the timer delay in milliseconds
      */
     public long getTimerDelay() {
+        //return 1000;
         return Math.max(2500, 12000 - 500 * this.level.get());
     }
 

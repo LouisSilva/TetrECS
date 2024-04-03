@@ -35,12 +35,12 @@ public class Communicator {
         try {
             var socketFactory = new WebSocketFactory();
 
-            //Connect to the server
+            // Connect to the server
             ws = socketFactory.createSocket(server);
             ws.connect();
             logger.info("Connected to " + server);
 
-            //When a message is received, call the receive method
+            // When a message is received, call the receive method
             ws.addListener(new WebSocketAdapter() {
                 @Override
                 public void onTextMessage(WebSocket websocket, String message) throws Exception {
@@ -52,7 +52,7 @@ public class Communicator {
                 }
             });
 
-            //Error handling
+            // Error handling
             ws.addListener(new WebSocketAdapter() {
                 @Override
                 public void onTextMessage(WebSocket websocket, String message) throws Exception {

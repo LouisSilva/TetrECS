@@ -109,7 +109,7 @@ public class GameBoard extends GridPane {
      * Build the GameBoard by creating a block at every x and y column and row
      */
     protected void build() {
-        logger.info("Building grid: {} x {}", this.getCols(), this.getRows());
+        // logger.info("Building grid: {} x {}", this.getCols(), this.getRows());
 
         setMaxWidth(width);
         setMaxHeight(height);

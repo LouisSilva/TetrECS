@@ -1,10 +1,11 @@
 package uk.ac.soton.comp1206.scene;
 
 import javafx.scene.Scene;
-import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
+
+import java.util.Objects;
 
 /**
  * A Base Scene used in the game. Handles common functionality between all scenes.
@@ -41,7 +42,7 @@ public abstract class BaseScene {
     public Scene setScene() {
         var previous = gameWindow.getScene();
         Scene scene = new Scene(root, previous.getWidth(), previous.getHeight(), Color.BLACK);
-        scene.getStylesheets().add(getClass().getResource("/style/game.css").toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/style/game.css")).toExternalForm());
         this.scene = scene;
         return scene;
     }
