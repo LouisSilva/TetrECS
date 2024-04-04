@@ -34,6 +34,21 @@ public class ScoresScene extends BaseScene {
 
     private final Game finishedGame;
 
+    private String username = null;
+
+    private static final int maxScoreArraySize = 10;
+
+    /**
+     * The future for the get username dialog
+     * It makes sure that the function that prompts the user for their username is thread safe
+     */
+    private volatile CompletableFuture<Void> getUsernameDialogCompletionFuture = CompletableFuture.completedFuture(null);
+
+    /**
+     * The lock used in the getUsername() method
+     */
+    private final Object lock = new Object();
+
     public record Score(String name, Integer score) {
 
         public String getName() {
@@ -157,10 +172,17 @@ public class ScoresScene extends BaseScene {
         centreGrid.add(onlineScoresLabel, 2, 1);
     }
 
+    /**
+     * Sends a message to the server asking for their high scores
+     */
     private void loadOnlineScores() {
-        this.gameWindow.getCommunicator().send("HISCORES DEFAULT");
+        this.gameWindow.getCommunicator().send("HISCORES UNIQUE");
     }
 
+    /**
+     * Handles an incoming server message
+     * @param msg the server message
+     */
     private void handleServerMessage(String msg) {
         if (msg.startsWith("HISCORES")) {
 
@@ -173,15 +195,39 @@ public class ScoresScene extends BaseScene {
                 for (String scoreStr : scoresStr) {
                     String[] parts = scoreStr.split(":");
                     if (parts.length == 2) {
-                        scores.add(new Score(parts[0], Integer.parseInt(parts[1])));
+
+                        // Catch the error if one of the scores has a value of "null"
+                        try {
+                            scores.add(new Score(parts[0], Integer.parseInt(parts[1])));
+                        } catch (NumberFormatException ignored) {
+                        }
                     }
                 }
 
+                // Check if a high score has been broken
+                if (this.seeIfNewHighScore(scores)) {
+                    Score newScore = new Score(this.getUsername(), this.finishedGame.score.getValue());
+                    scores.add(newScore);
+                    this.writeOnlineScores(newScore);
+                }
+
+                // Sort list of scores
+                scores.sort(Comparator.comparingInt(Score::getScore).reversed());
+
+                // If the list of scores is bigger than the maxScoreArraySize, then remove all the scores below that
+                if (scores.size() > maxScoreArraySize)
+                    scores.subList(maxScoreArraySize, scores.size()).clear();
+
                 remoteScores.set(FXCollections.observableArrayList(scores));
+
             });
         }
     }
 
+    /**
+     * Loads the scores from a local scores.txt file
+     * @param filePath the scores text file path, if it exists
+     */
     private void loadLocalScores(String filePath) {
         File scoresFile;
         List<Score> scores = new ArrayList<>();
@@ -231,19 +277,66 @@ public class ScoresScene extends BaseScene {
 
         // If there is a new high score, prompt the user for their name
         if (this.seeIfNewHighScore(scores)) {
-            TextInputDialog nameDialog = new TextInputDialog();
-            nameDialog.setTitle("Enter your username");
-            nameDialog.setHeaderText("You have a highscore! Please enter your username for the scoreboard");
-            nameDialog.setContentText("Name: ");
-
-            nameDialog.showAndWait().ifPresent(name -> scores.add(new Score(name, finishedGame.score.getValue())));
+            scores.add(new Score(this.getUsername(), finishedGame.score.getValue()));
         }
 
-        scores.sort(Comparator.comparingInt(Score::getScore).reversed()); // Sort list of scores
+        // Sort list of scores
+        scores.sort(Comparator.comparingInt(Score::getScore).reversed());
+
+        // If the list of scores is bigger than the maxScoreArraySize, then remove all the scores below that
+        if (scores.size() > maxScoreArraySize)
+            scores.subList(maxScoreArraySize, scores.size()).clear();
+
         localScores.set(FXCollections.observableArrayList(scores));
         writeLocalScores(scoresFile.getPath(), scores); // Write the new scores
     }
 
+    /**
+     * Gets the username of the player. If the username is not found, it will prompt the user for their username.
+     * This method ensures that only one dialog is open at a time, because it can be called by multiple threads at once e.g. the load local scores and load online scores
+     * @return the username
+     */
+    private String getUsername() {
+        CompletableFuture<Void> dialogWaitFuture;
+        synchronized (this.lock) {
+            if (this.username == null) {
+                // Wait for any existing dialog to close
+                dialogWaitFuture = this.getUsernameDialogCompletionFuture;
+                this.getUsernameDialogCompletionFuture = new CompletableFuture<>();
+            } else {
+                return this.username;
+            }
+        }
+
+        // Wait for any existing dialog to close without blocking main thread
+        dialogWaitFuture.join();
+
+        // Check again if the username is still null, if not then open the dialog to prompt the user to enter their username
+        if (this.username == null) {
+            Platform.runLater(() -> {
+                logger.debug("Username is null");
+                TextInputDialog nameDialog = new TextInputDialog();
+                nameDialog.setTitle("Enter your username");
+                nameDialog.setHeaderText("You have a highscore! Please enter your username for the scoreboard");
+                nameDialog.setContentText("Name: ");
+
+                Optional<String> result = nameDialog.showAndWait();
+                result.ifPresent(name -> this.username = name);
+                synchronized (this.lock) {
+                    getUsernameDialogCompletionFuture.complete(null); // Notify that the dialog has closed
+                }
+            });
+
+        }
+
+        return this.username;
+    }
+
+    /**
+     * Writes the given list of scores to the given file
+     * @param filePath the scores text file path
+     * @param scores the list of scores to write
+     */
     private void writeLocalScores(String filePath, List<Score> scores) {
         File file = new File(filePath);
         try {
@@ -265,6 +358,14 @@ public class ScoresScene extends BaseScene {
         } catch (IOException e) {
             logger.info("Could not open scores file: " + filePath, e);
         }
+    }
+
+    /**
+     * Sends a message to the server to submit the given new high-score
+     * @param newHighScore the new high score to write to the server
+     */
+    private void writeOnlineScores(Score newHighScore) {
+        this.gameWindow.getCommunicator().send("HISCORE " + newHighScore.getName() + ":" + newHighScore.getScore());
     }
 
     /**
