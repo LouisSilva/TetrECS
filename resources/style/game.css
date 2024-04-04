@@ -274,6 +274,11 @@ TextField {
     -fx-alignment: TOP-CENTER;
 }
 
+.scores-list-vbox-ception {
+    -fx-alignment: TOP-CENTER;
+    -fx-spacing: 5px;
+}
+
 .scores-grid {
     -fx-alignment: TOP-LEFT;
     -fx-vgap: 10px;
