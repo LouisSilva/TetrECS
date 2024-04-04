@@ -285,7 +285,9 @@ public class ChallengeScene extends BaseScene {
         File scoresFile = Paths.get(userDir, "data", "scores.txt").toFile();
 
         // Handle if the scores file does not exist
-        if (!scoresFile.exists()) return;
+        if (!scoresFile.exists()) {
+            logger.warn("Scores file does not exist. Filepath tried: " + scoresFile.getPath());
+        }
 
         // Load the high score
         BufferedReader reader = null;
@@ -304,10 +306,14 @@ public class ChallengeScene extends BaseScene {
             }
 
             // Get the one with the highest score
-            highscore.set(Collections.min(scores, Comparator.comparingInt(ScoresScene.Score::getScore)).getScore());
+            highscore.set(Collections.max(scores, Comparator.comparingInt(ScoresScene.Score::getScore)).getScore());
+
+            // Unbind the highscore label from the score, and bind it to the high score
+            highScoreLabel.textProperty().unbind();
+            highScoreLabel.textProperty().bind(highscore.asString("%d"));
 
         } catch (IOException e) {
-            logger.info("Could not open scores file: " + scoresFile.getPath());
+            logger.error("Could not open scores file: " + scoresFile.getPath());
             logger.debug(e);
             return;
 
@@ -393,6 +399,8 @@ public class ChallengeScene extends BaseScene {
             case SPACE, R -> game.swapCurrentPiece();
 
             case ENTER, X -> game.dropCurrentPiece();
+
+            case O -> game.endGame(); // only used for testing
         }
     }
 

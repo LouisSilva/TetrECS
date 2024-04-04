@@ -48,7 +48,7 @@ public class Communicator {
                 }
                 @Override
                 public void onPingFrame(WebSocket webSocket, WebSocketFrame webSocketFrame) throws Exception {
-                    logger.info("Ping? Pong!");
+                    logger.debug("Ping? Pong!");
                 }
             });
 
@@ -113,7 +113,8 @@ public class Communicator {
      * @param message the message that was received
      */
     private void receive(WebSocket websocket, String message) {
-        logger.info("Received: " + message);
+        if (!message.startsWith("HISCORES")) // Don't print all the high-scores into the terminal, its annoying
+            logger.info("Received: " + message);
 
         for(CommunicationsListener handler : handlers) {
             handler.receiveCommunication(message);

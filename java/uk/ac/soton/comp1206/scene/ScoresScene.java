@@ -24,6 +24,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ScoresScene extends BaseScene {
 
@@ -37,17 +38,6 @@ public class ScoresScene extends BaseScene {
     private String username = null;
 
     private static final int maxScoreArraySize = 10;
-
-    /**
-     * The future for the get username dialog
-     * It makes sure that the function that prompts the user for their username is thread safe
-     */
-    private volatile CompletableFuture<Void> getUsernameDialogCompletionFuture = CompletableFuture.completedFuture(null);
-
-    /**
-     * The lock used in the getUsername() method
-     */
-    private final Object lock = new Object();
 
     public record Score(String name, Integer score) {
 
@@ -72,6 +62,12 @@ public class ScoresScene extends BaseScene {
     private ScoresList localScoresListComponent;
     private ScoresList onlineScoresListComponent;
 
+    private CompletableFuture<String> usernameFuture;
+
+    private final AtomicBoolean localHighScoreAchieved = new AtomicBoolean(false);
+
+    private final AtomicBoolean onlineHighScoreAchieved = new AtomicBoolean(false);
+
     /**
      * Create a new scene, passing in the GameWindow the scene will be displayed in
      *
@@ -92,13 +88,21 @@ public class ScoresScene extends BaseScene {
             }
         });
 
-        this.loadOnlineScores();
-        this.loadLocalScores(null);
+        CompletableFuture<Void> onlineScoresFuture = CompletableFuture.runAsync(this::loadOnlineScores);
+        CompletableFuture<Void> localScoresFuture = CompletableFuture.runAsync(() -> this.loadLocalScores(null));
 
-        // Allows time for the online scores to be fetched
-        waitAsync(1).thenRun(() -> {
-            this.localScoresListComponent.revealScores();
-            this.onlineScoresListComponent.revealScores();
+        // Combine futures to proceed after both online and local scores are processed
+        CompletableFuture.allOf(onlineScoresFuture, localScoresFuture).thenRun(() -> {
+            if (localHighScoreAchieved.get() || onlineHighScoreAchieved.get()) {
+                Platform.runLater(() -> promptForUsername().thenAccept(username -> {
+                    this.username = username;
+                    revealScores();
+                }));
+
+            }
+            else {
+                revealScores();
+            }
         });
     }
 
@@ -173,6 +177,32 @@ public class ScoresScene extends BaseScene {
     }
 
     /**
+     * Prompts the user for their username asynchronously (needed because it opens up another window,
+     * Not making it asynchronous would make the other windows go onto "not responding" (don't know the technical term for that)
+     * @return the username. Returns null if it was unable to get the username
+     */
+    private CompletableFuture<String> promptForUsername() {
+        CompletableFuture<String> usernamePromptFuture = new CompletableFuture<>();
+
+        Platform.runLater(() -> {
+            // Prompt user
+            TextInputDialog nameDialog = new TextInputDialog();
+            nameDialog.setTitle("Enter your username");
+            nameDialog.setHeaderText("You have a highscore! Please enter your username for the scoreboard");
+            nameDialog.setContentText("Name: ");
+
+            Optional<String> result = nameDialog.showAndWait();
+            if (result.isPresent()) {
+                usernamePromptFuture.complete(result.get());
+            } else {
+                usernamePromptFuture.complete(null);
+            }
+        });
+
+        return usernamePromptFuture;
+    }
+
+    /**
      * Sends a message to the server asking for their high scores
      */
     private void loadOnlineScores() {
@@ -185,42 +215,24 @@ public class ScoresScene extends BaseScene {
      */
     private void handleServerMessage(String msg) {
         if (msg.startsWith("HISCORES")) {
-
             // Parse and load the scores
-            Platform.runLater(() -> {
-                String[] scoresStr = msg.substring("HISCORES ".length()).split("\n");
-                List<Score> scores = new ArrayList<>();
+            logger.debug("In handleservermessage");
+            List<Score> scores = parseScores(msg);
+            Platform.runLater(() -> remoteScores.set(FXCollections.observableList(scores)));
 
-                // Loop over each score and add to array
-                for (String scoreStr : scoresStr) {
-                    String[] parts = scoreStr.split(":");
-                    if (parts.length == 2) {
-
-                        // Catch the error if one of the scores has a value of "null"
-                        try {
-                            scores.add(new Score(parts[0], Integer.parseInt(parts[1])));
-                        } catch (NumberFormatException ignored) {
-                        }
-                    }
+            if (seeIfNewHighScore(scores)) {
+                onlineHighScoreAchieved.set(true);
+                if (!usernameFuture.isDone()) {
+                    promptForUsername().thenAccept(username -> {
+                        scores.add(new Score(username, finishedGame.score.getValue()));
+                        sortAndTrimScoresList(scores);
+                        Platform.runLater(() -> remoteScores.set(FXCollections.observableList(scores)));
+                    });
                 }
-
-                // Check if a high score has been broken
-                if (this.seeIfNewHighScore(scores)) {
-                    Score newScore = new Score(this.getUsername(), this.finishedGame.score.getValue());
-                    scores.add(newScore);
-                    this.writeOnlineScores(newScore);
-                }
-
-                // Sort list of scores
-                scores.sort(Comparator.comparingInt(Score::getScore).reversed());
-
-                // If the list of scores is bigger than the maxScoreArraySize, then remove all the scores below that
-                if (scores.size() > maxScoreArraySize)
-                    scores.subList(maxScoreArraySize, scores.size()).clear();
-
-                remoteScores.set(FXCollections.observableArrayList(scores));
-
-            });
+            } else {
+                sortAndTrimScoresList(scores);
+                Platform.runLater(() -> remoteScores.set(FXCollections.observableList(scores)));
+            }
         }
     }
 
@@ -229,6 +241,8 @@ public class ScoresScene extends BaseScene {
      * @param filePath the scores text file path, if it exists
      */
     private void loadLocalScores(String filePath) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        logger.debug("in loadlocalscores");
         File scoresFile;
         List<Score> scores = new ArrayList<>();
 
@@ -264,7 +278,6 @@ public class ScoresScene extends BaseScene {
         } catch (IOException e) {
             logger.info("Could not open scores file: " + filePath);
             logger.debug(e);
-            return;
 
         // Close reader
         } finally {
@@ -275,61 +288,23 @@ public class ScoresScene extends BaseScene {
             }
         }
 
-        // If there is a new high score, prompt the user for their name
         if (this.seeIfNewHighScore(scores)) {
-            scores.add(new Score(this.getUsername(), finishedGame.score.getValue()));
-        }
-
-        // Sort list of scores
-        scores.sort(Comparator.comparingInt(Score::getScore).reversed());
-
-        // If the list of scores is bigger than the maxScoreArraySize, then remove all the scores below that
-        if (scores.size() > maxScoreArraySize)
-            scores.subList(maxScoreArraySize, scores.size()).clear();
-
-        localScores.set(FXCollections.observableArrayList(scores));
-        writeLocalScores(scoresFile.getPath(), scores); // Write the new scores
-    }
-
-    /**
-     * Gets the username of the player. If the username is not found, it will prompt the user for their username.
-     * This method ensures that only one dialog is open at a time, because it can be called by multiple threads at once e.g. the load local scores and load online scores
-     * @return the username
-     */
-    private String getUsername() {
-        CompletableFuture<Void> dialogWaitFuture;
-        synchronized (this.lock) {
-            if (this.username == null) {
-                // Wait for any existing dialog to close
-                dialogWaitFuture = this.getUsernameDialogCompletionFuture;
-                this.getUsernameDialogCompletionFuture = new CompletableFuture<>();
-            } else {
-                return this.username;
+            localHighScoreAchieved.set(true);
+            if (!usernameFuture.isDone()) {
+                promptForUsername().thenAccept(username -> {
+                    scores.add(new Score(username, finishedGame.score.getValue()));
+                    sortAndTrimScoresList(scores);
+                    this.writeLocalScores(scoresFile.getPath(), scores);
+                    Platform.runLater(() -> localScores.set(FXCollections.observableList(scores)));
+                });
             }
+        } else {
+            sortAndTrimScoresList(scores);
+            Platform.runLater(() -> localScores.set(FXCollections.observableList(scores)));
         }
 
-        // Wait for any existing dialog to close without blocking main thread
-        dialogWaitFuture.join();
-
-        // Check again if the username is still null, if not then open the dialog to prompt the user to enter their username
-        if (this.username == null) {
-            Platform.runLater(() -> {
-                logger.debug("Username is null");
-                TextInputDialog nameDialog = new TextInputDialog();
-                nameDialog.setTitle("Enter your username");
-                nameDialog.setHeaderText("You have a highscore! Please enter your username for the scoreboard");
-                nameDialog.setContentText("Name: ");
-
-                Optional<String> result = nameDialog.showAndWait();
-                result.ifPresent(name -> this.username = name);
-                synchronized (this.lock) {
-                    getUsernameDialogCompletionFuture.complete(null); // Notify that the dialog has closed
-                }
-            });
-
-        }
-
-        return this.username;
+        writeLocalScores(scoresFile.getPath(), scores); // Write the new scores
+        logger.debug("Local scores have loaded: " + localScores.toString());
     }
 
     /**
@@ -364,7 +339,7 @@ public class ScoresScene extends BaseScene {
      * Sends a message to the server to submit the given new high-score
      * @param newHighScore the new high score to write to the server
      */
-    private void writeOnlineScores(Score newHighScore) {
+    private void writeOnlineScore(Score newHighScore) {
         this.gameWindow.getCommunicator().send("HISCORE " + newHighScore.getName() + ":" + newHighScore.getScore());
     }
 
@@ -378,10 +353,54 @@ public class ScoresScene extends BaseScene {
         return this.finishedGame.score.getValue() > scoreThreshold;
     }
 
-    private static CompletableFuture<Void> waitAsync(int seconds) {
+    /**
+     * Sorts the given list of scores by descending, and limits the list to the top 10 highest scores
+     * @param scores the list to sort and trim
+     */
+    private void sortAndTrimScoresList(List<Score> scores) {
+        // Sort list of scores
+        scores.sort(Comparator.comparingInt(Score::getScore).reversed());
+
+        // If the list of scores is bigger than the maxScoreArraySize, then remove all the scores below that
+        if (scores.size() > maxScoreArraySize)
+            scores.subList(maxScoreArraySize, scores.size()).clear();
+    }
+
+    /**
+     * Plays the reveal animation on the online and local score list components
+     */
+    private void revealScores() {
+        Platform.runLater(() -> {
+            logger.debug("Revealing scores!");
+            this.localScoresListComponent.revealScores();
+            this.onlineScoresListComponent.revealScores();
+        });
+    }
+
+    private List<Score> parseScores(String scores) {
+        String[] scoresStr = scores.substring("HISCORES ".length()).split("\n");
+        List<Score> scoresArr = new ArrayList<>();
+
+        // Loop over each score and add to array
+        for (String scoreStr : scoresStr) {
+            String[] parts = scoreStr.split(":");
+            if (parts.length == 2) {
+
+                // Catch the error if one of the scores has a value of "null"
+                try {
+                    scoresArr.add(new Score(parts[0], Integer.parseInt(parts[1])));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+
+        return scoresArr;
+    }
+
+    private static CompletableFuture<Void> waitAsync(long time, TimeUnit unit) {
         return CompletableFuture.runAsync(() -> {
             try {
-                TimeUnit.SECONDS.sleep(seconds);
+                unit.sleep(time);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new RuntimeException(e);

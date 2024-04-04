@@ -1,5 +1,7 @@
 package uk.ac.soton.comp1206.component;
 
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -148,7 +150,7 @@ public class GameBoard extends GridPane {
         block.bind(grid.getGridProperty(x,y));
 
         // Add a mouse click handler to the block to trigger GameBoard blockClicked method
-        block.setOnMouseClicked((e) -> blockClicked(block));
+        block.setOnMouseClicked((e) -> blockClicked(e, block));
 
     }
 
@@ -162,12 +164,21 @@ public class GameBoard extends GridPane {
 
     /**
      * Triggered when a block is clicked. Call the attached listener.
+     * @param event the mouse event
      * @param block block clicked on
      */
-    protected void blockClicked(GameBlock block) {
-        if (blockClickedListener != null) {
-            blockClickedListener.blockClicked(block);
+    private void blockClicked(MouseEvent event, GameBlock block) {
+        MouseButton button = event.getButton();
+
+        switch (button) {
+            case PRIMARY -> {
+                if (blockClickedListener != null) {
+                    blockClickedListener.blockClicked(block);
+                }
+            }
         }
+
+
     }
 
     /**

@@ -474,4 +474,12 @@ public class Game {
     public GamePiece getCurrentPiece() {
         return this.currentPiece;
     }
+
+    /**
+     * Public method that a scene can call to end the game. Only used for testing
+     */
+    public void endGame() {
+        this.shutdownGameLoop();
+        if (this.endGameListener != null) this.endGameListener.endGame(this);
+    }
 }
