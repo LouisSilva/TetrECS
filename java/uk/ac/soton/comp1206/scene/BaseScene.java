@@ -12,9 +12,19 @@ import java.util.Objects;
  */
 public abstract class BaseScene {
 
+    /**
+     * The GameWindow object used to load scenes onto
+     */
     protected final GameWindow gameWindow;
 
+    /**
+     * The GamePane object
+     */
     protected GamePane root;
+
+    /**
+     * The scene object
+     */
     protected Scene scene;
 
     /**

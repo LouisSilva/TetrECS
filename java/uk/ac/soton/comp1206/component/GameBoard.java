@@ -192,12 +192,30 @@ public class GameBoard extends GridPane {
         }
     }
 
+    /**
+     * Gets the amount of columns in the board
+     * @return the amount of columns
+     */
     protected int getCols() {
         return this.cols;
     }
 
+    /**
+     * Gets the amount of rows in the board
+     * @return the amount of rows
+     */
     protected int getRows() {
         return this.rows;
+    }
+
+    /**
+     * Gets the game block in the centre of the grid
+     * @return the centre game block
+     */
+    protected GameBlock getCenterBlock() {
+        int centerX = this.cols / 2;
+        int centerY = this.rows / 2;
+        return blocks[centerX][centerY];
     }
 
     /**

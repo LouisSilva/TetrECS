@@ -11,6 +11,9 @@ import org.apache.logging.log4j.Logger;
  */
 public class GamePiece {
 
+    /**
+     * A logger for debugging
+     */
     private static final Logger logger = LogManager.getLogger(GamePiece.class);
 
     /**

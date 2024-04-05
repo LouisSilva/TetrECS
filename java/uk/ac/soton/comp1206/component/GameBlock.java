@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.*;
 import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
@@ -84,6 +85,12 @@ public class GameBlock extends Canvas {
      * Keeps track of whether the block is part of a game board, because if not then the hover effect should not happen
      */
     public boolean isPartOfGameBoard = false;
+
+    /**
+     * Whether to display the circle indicator on this block.
+     * Used by PieceBoards
+     */
+    public boolean displayIndicator = false;
 
     /**
      * The animated colour used for the fade out
@@ -210,6 +217,13 @@ public class GameBlock extends Canvas {
         } else {
             // If the block is not empty, paint with the colour represented by the value
             paintColor(COLOURS[value.get()]);
+
+            GraphicsContext gc = getGraphicsContext2D();
+            if (displayIndicator) {
+                double radius = Math.min(width, height) / 4;
+                gc.setFill(Color.WHITE.deriveColor(0, 1, 1, 0.5));
+                gc.fillOval((width / 2) - radius, (height / 2) - radius, radius * 2, radius * 2);
+            }
         }
     }
 

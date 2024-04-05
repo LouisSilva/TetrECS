@@ -1,6 +1,5 @@
 package uk.ac.soton.comp1206.scene;
 
-import javafx.animation.RotateTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
@@ -8,8 +7,6 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.text.Text;
-import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.ui.GamePane;
@@ -22,6 +19,9 @@ import java.util.Objects;
  */
 public class MenuScene extends BaseScene {
 
+    /**
+     * The logger used for debugging
+     */
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
 
     /**
@@ -100,10 +100,18 @@ public class MenuScene extends BaseScene {
         gameWindow.startChallenge();
     }
 
+    /**
+     * Switches to the instructions menu
+     * @param event the event generated from clicking on the instructions button
+     */
     private void switchToInstructionsMenu(ActionEvent event) {
         gameWindow.loadScene(new InstructionsScene(this.gameWindow));
     }
 
+    /**
+     * Exits the game
+     * @param event the event generated from clicking on the exit button
+     */
     private void exitGame(ActionEvent event) {
         Platform.exit();
         System.exit(0);

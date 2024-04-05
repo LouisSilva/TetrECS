@@ -1,6 +1,5 @@
 package uk.ac.soton.comp1206.scene;
 
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -19,15 +18,28 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.Random;
 
+/**
+ * The Instructions scene which displays the instructions on how to play the game
+ */
 public class InstructionsScene extends BaseScene {
 
+    /**
+     * The logger used for debugging
+     */
     private static final Logger logger = LogManager.getLogger(InstructionsScene.class);
 
+    /**
+     * Create a new scene, passing in the GameWindow the scene will be displayed in
+     * @param gameWindow the game window
+     */
     public InstructionsScene(GameWindow gameWindow) {
         super(gameWindow);
         logger.info("Creating Instructions Scene");
     }
 
+    /**
+     * Initializes the scene and sets the on key pressed event listener
+     */
     @Override
     public void initialise() {
         logger.info("Initialising Instructions");
@@ -39,6 +51,9 @@ public class InstructionsScene extends BaseScene {
         });
     }
 
+    /**
+     * Build the Instructions window
+     */
     @Override
     public void build() {
         logger.info("Building " + this.getClass().getName());
@@ -131,5 +146,8 @@ public class InstructionsScene extends BaseScene {
         mainPane.setCenter(centreBox);
     }
 
+    /**
+     * The game description displayed in the window
+     */
     private static final String instructionsDescriptionText = "TetrECS is a fast-paced gravity-free block placement game, where you must survive by clearing rows through careful placement of the upcoming blocks before the time runs out. Lose all 3 lives and you're destroyed!";
 }

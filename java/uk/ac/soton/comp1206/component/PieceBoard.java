@@ -19,6 +19,14 @@ public class PieceBoard extends GameBoard {
         super(cols, rows, width, height);
     }
 
+    public PieceBoard(int cols, int rows, double width, double height, boolean displayIndicator) {
+        super(cols, rows, width, height);
+
+        if (displayIndicator) {
+            this.getCenterBlock().displayIndicator = true;
+        }
+    }
+
     public void displayPiece(GamePiece pieceToDisplay) {
         this.grid.clearGrid();
         GameBlockCoordinate gridCentre = this.grid.getGridCentre();

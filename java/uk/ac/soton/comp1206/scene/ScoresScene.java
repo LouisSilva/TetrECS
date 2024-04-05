@@ -24,8 +24,10 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * The scores scene which shows all of the local and online scores
+ */
 public class ScoresScene extends BaseScene {
 
     /**
@@ -33,12 +35,22 @@ public class ScoresScene extends BaseScene {
      */
     private static final Logger logger = LogManager.getLogger(ScoresScene.class);
 
+    /**
+     * The game object of the finished game
+     */
     private final Game finishedGame;
 
-    private String username = null;
-
+    /**
+     * The max amount of scores that can appear in each of the local scores list and the online scores list
+     */
     private static final int maxScoreArraySize = 10;
 
+    /**
+     * A score record object which holds the name and score.
+     * It is essentially a renamed Pair object
+     * @param name the name of player who got the score
+     * @param score the score
+     */
     public record Score(String name, Integer score) {
 
         public String getName() {
@@ -55,16 +67,28 @@ public class ScoresScene extends BaseScene {
         }
     }
 
+    /**
+     * The list of local scores which are bound to the local scores ScoresList component
+     */
     private SimpleListProperty<Score> localScores;
 
+    /**
+     * The list of online scores which are bound to the online scores ScoresList component
+     */
     private SimpleListProperty<Score> remoteScores;
 
+    /**
+     * The ScoresList component showing the local scores used in the scene
+     */
     private ScoresList localScoresListComponent;
+
+    /**
+     * The ScoresList component showing the online scores used in the scene
+     */
     private ScoresList onlineScoresListComponent;
 
     /**
      * Create a new scene, passing in the GameWindow the scene will be displayed in
-     *
      * @param gameWindow the game window
      */
     public ScoresScene(GameWindow gameWindow, Game finishedGame) {
@@ -72,6 +96,9 @@ public class ScoresScene extends BaseScene {
         this.finishedGame = finishedGame;
     }
 
+    /**
+     * Initializes the scene, load the scores and display them
+     */
     @Override
     public void initialise() {
         logger.info("Initializing Scores Scene");
@@ -92,6 +119,9 @@ public class ScoresScene extends BaseScene {
         });
     }
 
+    /**
+     * Build the Scores window
+     */
     @Override
     public void build() {
         logger.info("Building " + this.getClass().getName());
@@ -320,6 +350,11 @@ public class ScoresScene extends BaseScene {
         return this.finishedGame.score.getValue() > scoreThreshold;
     }
 
+    /**
+     * Converts a given string of scores into a list of score objects
+     * @param scores the string of scores to parse
+     * @return the list of score objects
+     */
     private List<Score> parseStringScores(String scores) {
         String[] scoresStr = scores.substring("HISCORES ".length()).split("\n");
         List<Score> scoresArr = new ArrayList<>();
@@ -340,6 +375,12 @@ public class ScoresScene extends BaseScene {
         return scoresArr;
     }
 
+    /**
+     * Waits on the thread that it was called in for a specified time
+     * @param time the amount of time to wait for
+     * @param unit the unit of time to be used on the time parameter
+     * @return the completable future
+     */
     private static CompletableFuture<Void> waitAsync(long time, TimeUnit unit) {
         return CompletableFuture.runAsync(() -> {
             try {

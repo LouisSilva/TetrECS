@@ -215,7 +215,8 @@ public class ChallengeScene extends BaseScene {
         currentPieceBoard = new PieceBoard(
                 3, 3,
                 (double) gameWindow.getWidth() / 8,
-                (double) gameWindow.getWidth() / 8);
+                (double) gameWindow.getWidth() / 8,
+                true);
 
         followingPieceBoard = new PieceBoard(
                 3, 3,
