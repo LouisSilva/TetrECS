@@ -81,6 +81,7 @@ public class MenuScene extends BaseScene {
         //Bind the playButton action to the startGame method in the menu
         playButton.setOnAction(this::startGame);
         instructionsButton.setOnAction(this::switchToInstructionsMenu);
+        multiplayerButton.setOnAction(this::switchToLobby);
         exitButton.setOnAction(this::exitGame);
     }
 
@@ -106,6 +107,14 @@ public class MenuScene extends BaseScene {
      */
     private void switchToInstructionsMenu(ActionEvent event) {
         gameWindow.loadScene(new InstructionsScene(this.gameWindow));
+    }
+
+    /**
+     * Switches to the lobby scene
+     * @param event the event generated from clicking on the multiplayer button
+     */
+    private void switchToLobby(ActionEvent event) {
+        gameWindow.loadScene(new LobbyScene(this.gameWindow));
     }
 
     /**

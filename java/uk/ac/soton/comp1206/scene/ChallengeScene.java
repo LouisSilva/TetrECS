@@ -120,7 +120,7 @@ public class ChallengeScene extends BaseScene {
      */
     @Override
     public void build() {
-        logger.info("Building " + this.getClass().getName());
+        logger.info("Building {}", this.getClass().getName());
 
         setupGame();
 
