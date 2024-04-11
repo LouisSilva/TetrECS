@@ -249,6 +249,9 @@ public class GameBlock extends Canvas {
         gc.strokeRect(0, 0, width, height);
     }
 
+    /**
+     * Paints the canvas with a specific colour and opacity for when it is being hovered over
+     */
     private void paintHover() {
         if (this.getValue() == 0) {
             var gc = this.getGraphicsContext2D();

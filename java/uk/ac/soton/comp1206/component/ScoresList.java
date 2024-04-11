@@ -34,12 +34,23 @@ public class ScoresList extends VBox {
         LIGHT_BLUE(Color.LIGHTBLUE),
         BLUE(Color.BLUE);
 
+        /**
+         * The colour that this enum represents
+         */
         private final Color colour;
 
+        /**
+         * The constructor for this enum
+         * @param colour the colour to represent
+         */
         LabelColours(Color colour) {
             this.colour = colour;
         }
 
+        /**
+         * Returns the stored colour
+         * @return the stored colour
+         */
         public Color getColour() {
             return colour;
         }

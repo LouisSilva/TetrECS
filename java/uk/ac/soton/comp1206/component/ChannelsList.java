@@ -147,18 +147,15 @@ public class ChannelsList extends VBox {
      * @param msg the server message
      */
     private void handleServerMessage(String msg) {
-        // Split message into key and value
-        String[] msgSplit = msg.split(" ");
-        if (msgSplit.length <= 1) return;
-        String keyword = msgSplit[0];
-        msg = msg.substring(keyword.length() + 1);
-
-        // Handles when it receives a list of all teh channels
-        if (keyword.equals("CHANNELS")) {
-            msgSplit = msg.split("\n");
+        // Handles when it receives a list of all the channels
+        if (msg.startsWith("CHANNELS")) {
+            String[] channels = new String[]{};
+            if (!msg.strip().trim().equals("CHANNELS")) {
+                channels = msg.substring("CHANNELS ".length()).split("\n");
+            }
 
             // Create a new channels list
-            List<String> newChannels = new ArrayList<>(Arrays.asList(msgSplit));
+            List<String> newChannels = new ArrayList<>(Arrays.asList(channels));
 
             // Update the component
             Platform.runLater(() -> {
@@ -166,6 +163,10 @@ public class ChannelsList extends VBox {
                 currentChannels.clear();
                 currentChannels.addAll(newChannels);
             });
+        }
+
+        else if (msg.startsWith("PARTED")) {
+            this.updateChannels();
         }
     }
 

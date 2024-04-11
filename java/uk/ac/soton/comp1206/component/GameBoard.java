@@ -22,6 +22,9 @@ import java.util.Set;
  */
 public class GameBoard extends GridPane {
 
+    /**
+     * The logger for this class
+     */
     private static final Logger logger = LogManager.getLogger(GameBoard.class);
 
     /**
@@ -129,7 +132,6 @@ public class GameBoard extends GridPane {
 
     /**
      * Create a block at the given x and y position in the GameBoard
-     *
      * @param x column
      * @param y row
      */
@@ -177,8 +179,6 @@ public class GameBoard extends GridPane {
                 }
             }
         }
-
-
     }
 
     /**

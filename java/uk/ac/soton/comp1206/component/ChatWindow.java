@@ -16,24 +16,50 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.network.Communicator;
 
+/**
+ * A custom component for making a chat window
+ */
 public class ChatWindow extends BorderPane {
     /**
      * Logger for debugging
      */
     private static final Logger logger = LogManager.getLogger(ChatWindow.class);
 
+    /**
+     * The communicator class needed to handle messages and nicknames
+     */
     private final Communicator communicator;
 
+    /**
+     * The box which holds all of the text messages
+     */
     private final TextFlow recievedMessagesTextFlow;
 
+    /**
+     * The field where a user can enter a text message
+     */
     private final TextField messageToSendTextField;
 
+    /**
+     * The scroll pane which holds the text flow and text field together
+     */
     private final ScrollPane messageScrollPane;
 
+    /**
+     * The button that starts the game if the user is the host
+     * It only shows if the user is the host, otherwise it is disabled and invisible
+     */
     private final Button startGameButton;
 
+    /**
+     * Controls whether the scroll pane should scroll to the bottom
+     */
     private boolean scrollToBottom = false;
 
+    /**
+     * The constructor for this component
+     * @param communicator The communicator object needed to handle messages and nicknames
+     */
     public ChatWindow(Communicator communicator) {
         super();
 
@@ -93,48 +119,67 @@ public class ChatWindow extends BorderPane {
     }
 
     /**
+     * Is called from the lobby scene to make sure the start game button appears if the user is the host
+     */
+    public void setAsHost() {
+        if (this.startGameButton == null) return;
+        Platform.runLater(() -> {
+            this.startGameButton.setDisable(false);
+            this.startGameButton.setOpacity(1);
+        });
+    }
+
+    /**
      * Handles an incoming server message
      * @param msg the server message
      */
     private void handleServerMessage(String msg) {
-        // Split message into key and value
-        String[] msgSplit = msg.split(" ");
-        if (msgSplit.length <= 1) return;
-        String keyword = msgSplit[0];
-        msg = msg.substring(keyword.length() + 1);
-
-        // Handles when a message is received
-        if (keyword.equals("MSG")) {
-            msgSplit = msg.split(":");
-            if (msgSplit.length <= 1) {
-                logger.error("Message received from server only had {} parts", msgSplit.length);
-                return;
+        // Handles when the server says the user is the host
+        if (msg.startsWith("HOST")) {
+            if (this.startGameButton != null) {
+                Platform.runLater(() -> {
+                    this.startGameButton.setDisable(false);
+                    this.startGameButton.setOpacity(1);
+                });
             }
-
-            String username = msgSplit[0];
-            msg = msg.substring(username.length() + 1);
-
-            String finalMsg = msg;
-            Platform.runLater(() -> {
-                Text receivedMessage = new Text(username + ": " + finalMsg + "\n");
-                receivedMessage.getStyleClass().add("chat-window-message");
-                this.recievedMessagesTextFlow.getChildren().add(receivedMessage);
-                if (this.messageScrollPane.getVvalue() == 0.0f || this.messageScrollPane.getVvalue() > 0.9f) {
-                    this.scrollToBottom = true;
-                }
-            });
         }
 
-        // Handles when the server says the user is the host
-        if (keyword.equals("HOST")) {
-            if (this.startGameButton != null){
-                this.startGameButton.setDisable(false);
-                this.startGameButton.setOpacity(1);
-            }
+        else {
+            // Split message into key and value
+            String[] msgSplit = msg.split(" ");
+            if (msgSplit.length <= 1) return;
+            String keyword = msgSplit[0];
+            msg = msg.substring(keyword.length() + 1);
 
+            // Handles when a message is received
+            if (keyword.equals("MSG")) {
+                msgSplit = msg.split(":");
+                if (msgSplit.length <= 1) {
+                    logger.error("Message received from server only had {} parts", msgSplit.length);
+                    return;
+                }
+
+                String username = msgSplit[0];
+                msg = msg.substring(username.length() + 1);
+
+                String finalMsg = msg;
+                Platform.runLater(() -> {
+                    Text receivedMessage = new Text(username + ": " + finalMsg + "\n");
+                    receivedMessage.getStyleClass().add("chat-window-message");
+                    this.recievedMessagesTextFlow.getChildren().add(receivedMessage);
+                    if (this.messageScrollPane.getVvalue() == 0.0f || this.messageScrollPane.getVvalue() > 0.9f) {
+                        this.scrollToBottom = true;
+                    }
+                });
+            }
         }
     }
 
+    /**
+     * Sends a message to the server
+     * Makes sure to handle if a user types a command like "/nick"
+     * @param msg the message to send
+     */
     private void sendMessage(String msg) {
         // Check if the user is trying to change their nickname first
         if (msg.startsWith("/nickname ") || msg.startsWith("/NICKNAME ") || msg.startsWith("/Nickname ") || msg.startsWith("/nick")) {
@@ -147,10 +192,12 @@ public class ChatWindow extends BorderPane {
         }
     }
 
-    public Runnable jumpScrollerToBottom() {
-        if (!this.scrollToBottom) return null;
+    /**
+     * Scrolls the scroll pane to the bottom by controlling the boolean
+     */
+    public void jumpScrollerToBottom() {
+        if (!this.scrollToBottom) return;
         this.messageScrollPane.setVvalue(1.0f);
         this.scrollToBottom = false;
-        return null;
     }
 }

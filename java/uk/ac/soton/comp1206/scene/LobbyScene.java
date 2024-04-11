@@ -19,15 +19,29 @@ import uk.ac.soton.comp1206.component.VerticalSpacer;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
+/**
+ * The scene for displaying and creating multiplayer lobbies
+ */
 public class LobbyScene extends BaseScene {
     /**
      * Logger for debugging
      */
     private static final Logger logger = LogManager.getLogger(LobbyScene.class);
 
+    /**
+     * The border pane which holds all of the components
+     */
     private BorderPane mainBorderPane;
 
+    /**
+     * The ChannelsList component which lists all the available channels to join
+     */
     private ChannelsList channelsList;
+
+    /**
+     * The ChatWindow component which is a chat window...
+     */
+    private ChatWindow chatWindow;
 
     /**
      * Create a new scene, passing in the GameWindow the scene will be displayed in
@@ -106,6 +120,10 @@ public class LobbyScene extends BaseScene {
         this.gameWindow.getCommunicator().addListener(this::handleServerMessage);
     }
 
+    /**
+     * Makes sure to either create a new lobby with the given channel name or make the text field visible
+     * @param hostNewGameTextField the text field where the user can input the channel name
+     */
     private void handleHostNewGameButtonPressed(TextField hostNewGameTextField) {
         if (hostNewGameTextField.getText().isEmpty()) {
             hostNewGameTextField.setVisible(true);
@@ -117,10 +135,23 @@ public class LobbyScene extends BaseScene {
         }
     }
 
+    /**
+     * Handles the server messages
+     * @param msg the message from the server
+     */
     private void handleServerMessage(String msg) {
+        // Handles when the server says the user is the host
+        if (msg.startsWith("HOST")) {
+            Platform.runLater(() -> {
+                this.chatWindow.setAsHost();
+            });
+            return;
+        }
+
         // Handles when we disconnect from a channel
         if (msg.equals("PARTED")) {
             Platform.runLater(() -> this.mainBorderPane.setCenter(null));
+            return;
         }
 
         // Split message into key and value
@@ -150,11 +181,11 @@ public class LobbyScene extends BaseScene {
                 VerticalSpacer spacer2 = new VerticalSpacer(40);
                 HorizontalSpacer spacer3 = new HorizontalSpacer(40);
                 HorizontalSpacer spacer4 = new HorizontalSpacer(5);
-                ChatWindow chatWindow = new ChatWindow(this.gameWindow.getCommunicator());
-                chatWindow.getStyleClass().add("chat-window");
+                this.chatWindow = new ChatWindow(this.gameWindow.getCommunicator());
+                this.chatWindow.getStyleClass().add("chat-window");
 
                 centreBox.getChildren().addAll(spacer3, chatWindowContainer, spacer4);
-                chatWindowContainer.getChildren().addAll(spacer1, channelNameLabel, new VerticalSpacer(10), chatWindow, spacer2);
+                chatWindowContainer.getChildren().addAll(spacer1, channelNameLabel, new VerticalSpacer(10), this.chatWindow, spacer2);
 
                 this.mainBorderPane.setCenter(centreBox);
             });
