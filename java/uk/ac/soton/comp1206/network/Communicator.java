@@ -38,7 +38,7 @@ public class Communicator {
             // Connect to the server
             ws = socketFactory.createSocket(server);
             ws.connect();
-            logger.info("Connected to " + server);
+            logger.info("Connected to {}", server);
 
             // When a message is received, call the receive method
             ws.addListener(new WebSocketAdapter() {
@@ -62,18 +62,18 @@ public class Communicator {
                 }
                 @Override
                 public void handleCallbackError(WebSocket webSocket, Throwable throwable) throws Exception {
-                    logger.error("Callback Error:" + throwable.getMessage());
+                    logger.error("Callback Error:{}", throwable.getMessage());
                     throwable.printStackTrace();
                 }
                 @Override
                 public void onError(WebSocket webSocket, WebSocketException e) throws Exception {
-                    logger.error("Error:" + e.getMessage());
+                    logger.error("Error:{}", e.getMessage());
                     e.printStackTrace();
                 }
             });
 
         } catch (Exception e){
-            logger.error("Socket error: " + e.getMessage());
+            logger.error("Socket error: {}", e.getMessage());
             e.printStackTrace();
 
             Alert error = new Alert(Alert.AlertType.ERROR,"Unable to communicate with the TetrECS server\n\n" + e.getMessage() + "\n\nPlease ensure you are connected to the VPN");
@@ -82,12 +82,12 @@ public class Communicator {
         }
     }
 
-    /** Send a message to the server
-     *
+    /**
+     * Send a message to the server
      * @param message Message to send
      */
     public void send(String message) {
-        logger.info("Sending message: " + message);
+        logger.info("Sending message: {}", message);
 
         ws.sendText(message);
     }
@@ -114,7 +114,7 @@ public class Communicator {
      */
     private void receive(WebSocket websocket, String message) {
         if (!message.startsWith("HISCORES")) // Don't print all the high-scores into the terminal, its annoying
-            logger.info("Received: " + message);
+            logger.info("Received: {}", message);
 
         for(CommunicationsListener handler : handlers) {
             handler.receiveCommunication(message);

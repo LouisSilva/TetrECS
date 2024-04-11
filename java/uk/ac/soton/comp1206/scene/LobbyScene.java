@@ -12,6 +12,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import uk.ac.soton.comp1206.component.ChannelsList;
 import uk.ac.soton.comp1206.component.ChatWindow;
 import uk.ac.soton.comp1206.component.HorizontalSpacer;
 import uk.ac.soton.comp1206.component.VerticalSpacer;
@@ -95,8 +96,7 @@ public class LobbyScene extends BaseScene {
         VerticalSpacer spacer2 = new VerticalSpacer(40);
         Label currentGamesTitle = new Label("Current Games");
         currentGamesTitle.getStyleClass().add("heading");
-        VBox currentGamesContainer = new VBox();
-        currentGamesContainer.setAlignment(Pos.TOP_LEFT);
+        ChannelsList currentGamesContainer = new ChannelsList(this.gameWindow.getCommunicator());
         sidebar.getChildren().addAll(spacer2, currentGamesTitle, currentGamesContainer);
         mainBorderPane.setLeft(sidebar);
 
@@ -121,9 +121,10 @@ public class LobbyScene extends BaseScene {
         String keyword = msgSplit[0];
         msg = msg.substring(keyword.length() + 1);
 
+        // Handles when a join message is received
         if (keyword.equals("JOIN")) {
             // Create chat window
-            String finalMsg = msg;
+            String finalMsg = msg.trim().strip();
             Platform.runLater(() -> {
                 HBox centreBox = new HBox();
                 centreBox.setAlignment(Pos.TOP_LEFT);
@@ -144,8 +145,13 @@ public class LobbyScene extends BaseScene {
                 centreBox.getChildren().addAll(spacer3, chatWindowContainer, spacer4);
                 chatWindowContainer.getChildren().addAll(spacer1, channelNameLabel, new VerticalSpacer(10), chatWindow, spacer2);
 
-                mainBorderPane.setCenter(centreBox);
+                this.mainBorderPane.setCenter(centreBox);
             });
+        }
+
+        // Handles when we disconnect from a channel
+        else if (keyword.equals("PARTED")) {
+            this.mainBorderPane.setCenter(null);
         }
     }
 }

@@ -122,6 +122,7 @@ public class MenuScene extends BaseScene {
      * @param event the event generated from clicking on the exit button
      */
     private void exitGame(ActionEvent event) {
+        this.gameWindow.getCommunicator().send("QUIT");
         Platform.exit();
         System.exit(0);
     }

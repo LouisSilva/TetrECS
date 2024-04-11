@@ -347,3 +347,9 @@ TextField {
     -fx-wrap-text: true;
     -fx-text-alignment: center;
 }
+
+.channel-list-vbox {
+    -fx-alignment: TOP-LEFT;
+    -fx-spacing: 10px;
+    -fx-padding: 5px 1px 10px 1px; /* top, right, bottom, left */
+}
