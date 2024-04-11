@@ -1,6 +1,7 @@
 package uk.ac.soton.comp1206.component;
 
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -8,6 +9,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import org.apache.logging.log4j.LogManager;
@@ -28,6 +30,8 @@ public class ChatWindow extends BorderPane {
 
     private final ScrollPane messageScrollPane;
 
+    private final Button startGameButton;
+
     private boolean scrollToBottom = false;
 
     public ChatWindow(Communicator communicator) {
@@ -44,7 +48,22 @@ public class ChatWindow extends BorderPane {
         HBox sendMessageHBox = new HBox();
         HBox.setHgrow(this.messageToSendTextField, Priority.ALWAYS);
         sendMessageHBox.getChildren().addAll(this.messageToSendTextField, sendMessageButton);
-        this.setBottom(sendMessageHBox);
+
+        // Create start and leave game buttons
+        HBox leaveStartGameHBox = new HBox();
+        leaveStartGameHBox.setPadding(new Insets(10f, 5f, 5f, 5f));
+        Button leaveGameButton = new Button("Leave");
+        leaveGameButton.setOnAction(event -> this.leaveGame());
+        this.startGameButton = new Button("Start");
+        this.startGameButton.setOnAction(event -> this.startGame());
+        this.startGameButton.setOpacity(0);
+        this.startGameButton.setDisable(true);
+        leaveStartGameHBox.getChildren().addAll(leaveGameButton, startGameButton);
+
+        // Add the text field and button H-boxes to a Vbox
+        VBox chatButtonsVBox = new VBox();
+        chatButtonsVBox.getChildren().addAll(sendMessageHBox, leaveStartGameHBox);
+        this.setBottom(chatButtonsVBox);
 
         // Create received messages container
         this.recievedMessagesTextFlow = new TextFlow();
@@ -57,6 +76,20 @@ public class ChatWindow extends BorderPane {
         this.messageScrollPane.setContent(this.recievedMessagesTextFlow);
         this.messageScrollPane.setFitToWidth(true);
         this.setCenter(this.messageScrollPane);
+    }
+
+    /**
+     * Leaves the current lobby
+     */
+    private void leaveGame() {
+        this.communicator.send("PART");
+    }
+
+    /**
+     * Starts the game in the current lobby
+     */
+    private void startGame() {
+        this.communicator.send("START");
     }
 
     /**
@@ -90,6 +123,15 @@ public class ChatWindow extends BorderPane {
                     this.scrollToBottom = true;
                 }
             });
+        }
+
+        // Handles when the server says the user is the host
+        if (keyword.equals("HOST")) {
+            if (this.startGameButton != null){
+                this.startGameButton.setDisable(false);
+                this.startGameButton.setOpacity(1);
+            }
+
         }
     }
 

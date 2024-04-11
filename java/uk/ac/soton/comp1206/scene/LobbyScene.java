@@ -27,6 +27,8 @@ public class LobbyScene extends BaseScene {
 
     private BorderPane mainBorderPane;
 
+    private ChannelsList channelsList;
+
     /**
      * Create a new scene, passing in the GameWindow the scene will be displayed in
      *
@@ -46,6 +48,7 @@ public class LobbyScene extends BaseScene {
 
         getScene().setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
+                this.channelsList.shutdownUpdateChannelsTimer();
                 this.gameWindow.getCommunicator().send("PART");
                 this.gameWindow.startMenu();
             }
@@ -96,9 +99,9 @@ public class LobbyScene extends BaseScene {
         VerticalSpacer spacer2 = new VerticalSpacer(40);
         Label currentGamesTitle = new Label("Current Games");
         currentGamesTitle.getStyleClass().add("heading");
-        ChannelsList currentGamesContainer = new ChannelsList(this.gameWindow.getCommunicator());
-        sidebar.getChildren().addAll(spacer2, currentGamesTitle, currentGamesContainer);
-        mainBorderPane.setLeft(sidebar);
+        this.channelsList = new ChannelsList(this.gameWindow.getCommunicator());
+        sidebar.getChildren().addAll(spacer2, currentGamesTitle, this.channelsList);
+        this.mainBorderPane.setLeft(sidebar);
 
         this.gameWindow.getCommunicator().addListener(this::handleServerMessage);
     }
@@ -115,11 +118,19 @@ public class LobbyScene extends BaseScene {
     }
 
     private void handleServerMessage(String msg) {
+        // Handles when we disconnect from a channel
+        if (msg.equals("PARTED")) {
+            Platform.runLater(() -> this.mainBorderPane.setCenter(null));
+        }
+
         // Split message into key and value
         String[] msgSplit = msg.split(" ");
-        if (msgSplit.length <= 1) return;
-        String keyword = msgSplit[0];
-        msg = msg.substring(keyword.length() + 1);
+        String keyword;
+        if (msgSplit.length == 0) keyword = msg;
+        else {
+            keyword = msgSplit[0];
+            msg = msg.substring(keyword.length() + 1);
+        }
 
         // Handles when a join message is received
         if (keyword.equals("JOIN")) {
@@ -147,11 +158,6 @@ public class LobbyScene extends BaseScene {
 
                 this.mainBorderPane.setCenter(centreBox);
             });
-        }
-
-        // Handles when we disconnect from a channel
-        else if (keyword.equals("PARTED")) {
-            this.mainBorderPane.setCenter(null);
         }
     }
 }

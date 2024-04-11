@@ -101,7 +101,7 @@ public class ChannelsList extends VBox {
     /**
      * Shuts down the update channels timer properly
      */
-    private void shutdownUpdateChannelsTimer() {
+    public void shutdownUpdateChannelsTimer() {
         if (updateChannelsFuture != null) {
             updateChannelsFuture.cancel(true);
         }
@@ -120,16 +120,18 @@ public class ChannelsList extends VBox {
      * Adds a new button for each channel in the list
      */
     private void updateChannelsDisplay() {
-        this.getChildren().clear();
-        this.getStyleClass().add("channel-list-vbox");
-        for (int i=0; i < this.getChannels().toArray().length; i++) {
-            String channel = this.getChannels().get(i);
-            Button channelButton = new Button();
-            channelButton.setOnAction((event) -> this.joinChannel(channel));
-            channelButton.setText(channel.trim().strip());
-            channelButton.getStyleClass().add("host-game-button");
-            this.getChildren().add(channelButton);
-        }
+        Platform.runLater(() -> {
+            this.getChildren().clear();
+            this.getStyleClass().add("channel-list-vbox");
+            for (int i=0; i < this.getChannels().toArray().length; i++) {
+                String channel = this.getChannels().get(i);
+                Button channelButton = new Button();
+                channelButton.setOnAction((event) -> this.joinChannel(channel));
+                channelButton.setText(channel.trim().strip());
+                channelButton.getStyleClass().add("host-game-button");
+                this.getChildren().add(channelButton);
+            }
+        });
     }
 
     /**
@@ -154,10 +156,6 @@ public class ChannelsList extends VBox {
         // Handles when it receives a list of all teh channels
         if (keyword.equals("CHANNELS")) {
             msgSplit = msg.split("\n");
-            if (msgSplit.length == 0) {
-                logger.error("Message received from server only had {} parts", msgSplit.length);
-                return;
-            }
 
             // Create a new channels list
             List<String> newChannels = new ArrayList<>(Arrays.asList(msgSplit));
