@@ -45,12 +45,12 @@ public class Game {
     /**
      * The current piece
      */
-    private GamePiece currentPiece;
+    protected GamePiece currentPiece;
 
     /**
      * The next piece
      */
-    private GamePiece followingPiece;
+    protected GamePiece followingPiece;
 
     /**
      * The score
@@ -75,7 +75,7 @@ public class Game {
     /**
      * The next piece listener for the ui GameBoards
      */
-    private NextPieceListener nextPieceListener;
+    protected NextPieceListener nextPieceListener;
 
     /**
      * The rotate piece listener for the ui GameBoards
@@ -181,13 +181,11 @@ public class Game {
         // Handle the game loop stuff in the fx thread
         Platform.runLater(() -> {
             logger.info("Game Loop!");
-            lives.set(lives.get() - 1);
+            this.loseLife();
 
             // End game if all lives are gone
-            if (lives.get() <= 0) {
-                this.shutdownGameLoop();
-                if (this.endGameListener != null) this.endGameListener.endGame(this);
-                else this.start();
+            if (lives.get() < 0) {
+                this.endGame();
             }
 
             else {
@@ -228,11 +226,13 @@ public class Game {
     }
 
     /**
-     * Exits the game
+     * Ends the game properly
+     * Its protected so it can be overridden
      */
-    public void exitGame() {
-        logger.info("Exiting game");
+    protected void endGame() {
         this.shutdownGameLoop();
+        if (this.endGameListener != null) this.endGameListener.endGame(this);
+        else this.start();
     }
 
     /**
@@ -246,11 +246,19 @@ public class Game {
 
         // Play piece if possible
         if (grid.playPiece(this.getCurrentPiece(), x, y)) {
-            this.nextPiece();
-            this.resetTimer();
-            this.gameLoopListener.onGameLoop();
-            this.afterPiecePlayed();
+            this.handlePlayPiece();
         }
+    }
+
+    /**
+     * Handle what should happen when a piece was successfully played.
+     * This is in a separate method so it can be overridden
+     */
+    protected void handlePlayPiece() {
+        this.nextPiece();
+        this.resetTimer();
+        this.gameLoopListener.onGameLoop();
+        this.afterPiecePlayed();
     }
 
     /**
@@ -352,7 +360,7 @@ public class Game {
     /**
      * Changes the current piece and following piece variables to the next piece
      */
-    private void nextPiece() {
+    protected void nextPiece() {
         this.currentPiece = this.followingPiece;
         this.followingPiece = this.spawnPiece();
 
@@ -388,6 +396,14 @@ public class Game {
         this.followingPiece = tempPiece;
 
         if (this.nextPieceListener != null) this.nextPieceListener.nextPiece(this.currentPiece, this.followingPiece);
+    }
+
+    /**
+     * Decrements the lives by one
+     * Protected method so it can be overridden
+     */
+    protected void loseLife() {
+        lives.set(lives.get() - 1);
     }
 
     /**
@@ -479,9 +495,10 @@ public class Game {
     }
 
     /**
-     * Public method that a scene can call to end the game. Only used for testing
+     * Public method that a scene can call to end the game.
+     *
      */
-    public void endGame() {
+    public void remoteEndGame() {
         this.shutdownGameLoop();
         if (this.endGameListener != null) this.endGameListener.endGame(this);
     }

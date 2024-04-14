@@ -136,7 +136,7 @@ public class ChallengeScene extends BaseScene {
         challengePane.getChildren().add(mainPane);
 
         // Build game board
-        gameBoard = new GameBoard(game.getGrid(), (double) gameWindow.getWidth() / 2, (double) gameWindow.getWidth() / 2);
+        gameBoard = new GameBoard(this.getGame().getGrid(), (double) gameWindow.getWidth() / 2, (double) gameWindow.getWidth() / 2);
         gameBoard.getStyleClass().add("gameBox");
         gameBoard.setOnBlockClick(this::blockClicked);
 
@@ -249,20 +249,27 @@ public class ChallengeScene extends BaseScene {
     public void setupGame() {
         logger.info("Starting a new challenge");
 
-        //Start new game
-        game = new Game(5, 5);
+        // Start new game
+        this.createGameInstance();
 
         // Add binds
-        this.bindScore(game.score);
-        this.bindLevel(game.level);
-        this.bindLives(game.lives);
-        this.bindMultiplier(game.multiplier);
+        this.bindScore(this.getGame().score);
+        this.bindLevel(this.getGame().level);
+        this.bindLives(this.getGame().lives);
+        this.bindMultiplier(this.getGame().multiplier);
 
-        game.setNextPieceListener(this::nextPiece);
-        game.setRotatePieceListener(this::rotatePiece);
-        game.setGameLoopListener(this::resetTimerBar);
-        game.setLineClearedListener(this::fadeOut);
-        game.setEndGameListener(this::handleEndGame);
+        this.getGame().setNextPieceListener(this::nextPiece);
+        this.getGame().setRotatePieceListener(this::rotatePiece);
+        this.getGame().setGameLoopListener(this::resetTimerBar);
+        this.getGame().setLineClearedListener(this::fadeOut);
+        this.getGame().setEndGameListener(this::handleEndGame);
+    }
+
+    /**
+     * A method which can be overridden that creates a new game instance
+     */
+    protected void createGameInstance() {
+        this.game = new Game(5, 5);
     }
 
     /**
@@ -270,7 +277,7 @@ public class ChallengeScene extends BaseScene {
      */
     @Override
     public void initialise() {
-        game.start();
+        this.getGame().start();
 
         getScene().setOnKeyPressed(this::handleKeyPressed);
         getScene().setOnMouseClicked(this::handleRightClick);
@@ -343,8 +350,8 @@ public class ChallengeScene extends BaseScene {
         // Create timeline with keyframes
         timeline = new Timeline(
                 new KeyFrame(Duration.ZERO, new KeyValue(timerBar.widthProperty(), gameWindow.getWidth())),
-                new KeyFrame(Duration.seconds((game.getTimerDelay() / 1000.0) * 0.7), e -> timerBar.setFill(Color.RED)),
-                new KeyFrame(Duration.seconds(game.getTimerDelay() / 1000.0), new KeyValue(timerBar.widthProperty(), 0))
+                new KeyFrame(Duration.seconds((this.getGame().getTimerDelay() / 1000.0) * 0.7), e -> timerBar.setFill(Color.RED)),
+                new KeyFrame(Duration.seconds(this.getGame().getTimerDelay() / 1000.0), new KeyValue(timerBar.widthProperty(), 0))
         );
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
@@ -376,7 +383,7 @@ public class ChallengeScene extends BaseScene {
         MouseButton button = mouseEvent.getButton();
 
         switch (button) {
-            case SECONDARY -> this.game.rotateCurrentPiece();
+            case SECONDARY -> this.getGame().rotateCurrentPiece();
         }
     }
 
@@ -389,19 +396,19 @@ public class ChallengeScene extends BaseScene {
 
         switch (keyCode) {
             case ESCAPE -> {
-                game.exitGame();
+                this.getGame().remoteEndGame();
                 gameWindow.loadScene(new MenuScene(gameWindow));
             }
 
-            case Q, Z, OPEN_BRACKET -> game.rotateCurrentPiece(3);
+            case Q, Z, OPEN_BRACKET -> this.getGame().rotateCurrentPiece(3);
 
-            case E, C, CLOSE_BRACKET -> game.rotateCurrentPiece();
+            case E, C, CLOSE_BRACKET -> this.getGame().rotateCurrentPiece();
 
-            case SPACE, R -> game.swapCurrentPiece();
+            case SPACE, R -> this.getGame().swapCurrentPiece();
 
-            case ENTER, X -> game.dropCurrentPiece();
+            case ENTER, X -> this.getGame().dropCurrentPiece();
 
-            case O -> game.endGame(); // only used for testing
+            case O -> this.getGame().remoteEndGame(); // only used for testing
         }
     }
 
@@ -410,7 +417,7 @@ public class ChallengeScene extends BaseScene {
      * @param gameBlock the game block that was clicked
      */
     private void currentPieceBoardClicked(GameBlock gameBlock) {
-        game.rotateCurrentPiece();
+        this.getGame().rotateCurrentPiece();
     }
 
     /**
@@ -418,7 +425,7 @@ public class ChallengeScene extends BaseScene {
      * @param gameBlock the Game Block that was clocked
      */
     private void blockClicked(GameBlock gameBlock) {
-        game.blockClicked(gameBlock);
+        this.getGame().blockClicked(gameBlock);
     }
 
     private void handleEndGame(Game finalGameObject) {
@@ -434,7 +441,7 @@ public class ChallengeScene extends BaseScene {
         gameBoard.fadeOut(gameBlockCoordinates);
 
         // Check if the highscore has been broken, if so then update it
-        if (game.score.getValue() > highscore.getValue()) {
+        if (this.getGame().score.getValue() > highscore.getValue()) {
             highScoreLabel.textProperty().unbind();
             highScoreLabel.textProperty().bind(score.asString("%d"));
         }
@@ -470,5 +477,13 @@ public class ChallengeScene extends BaseScene {
      */
     private void bindMultiplier(ObservableValue<? extends Number> input) {
         this.multiplier.bind(input);
+    }
+
+    /**
+     * Returns the game object
+     * @return the game object
+     */
+    protected Game getGame() {
+        return this.game;
     }
 }

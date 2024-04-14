@@ -9,12 +9,12 @@ import uk.ac.soton.comp1206.component.GameBlockCoordinate;
 /**
  * The Grid is a model which holds the state of a game board. It is made up of a set of Integer values arranged in a 2D
  * arrow, with rows and columns.
- *
+ * <p>
  * Each value inside the Grid is an IntegerProperty can be bound to enable modification and display of the contents of
  * the grid.
- *
+ * <p>
  * The Grid contains functions related to modifying the model, for example, placing a piece inside the grid.
- *
+ * <p>
  * The Grid should be linked to a GameBoard for it's display.
  */
 public class Grid {

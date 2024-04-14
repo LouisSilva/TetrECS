@@ -88,6 +88,20 @@ public class GameWindow {
     public void startChallenge() { loadScene(new ChallengeScene(this)); }
 
     /**
+     * Display the multiplayer challenge
+     */
+    public void startMultiplayerChallenge () {
+        loadScene(new MultiplayerScene(this));
+    }
+
+    /**
+     * Display the lobby scene
+     */
+    public void startLobbyScene() {
+        loadScene(new LobbyScene(this));
+    }
+
+    /**
      * Setup the default settings for the stage itself (the window), such as the title and minimum width and height.
      */
     public void setupStage() {

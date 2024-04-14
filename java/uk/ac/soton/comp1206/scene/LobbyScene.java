@@ -154,6 +154,13 @@ public class LobbyScene extends BaseScene {
             return;
         }
 
+        // Handles when the game is started
+        if (msg.equals("START")) {
+            this.channelsList.shutdownUpdateChannelsTimer();
+            Platform.runLater(this.gameWindow::startMultiplayerChallenge);
+            return;
+        }
+
         // Split message into key and value
         String[] msgSplit = msg.split(" ");
         String keyword;

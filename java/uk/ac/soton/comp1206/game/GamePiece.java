@@ -39,7 +39,7 @@ public class GamePiece {
     /**
      * Enum for better storage of all the game piece types
      */
-    private enum GamePieceType {
+    public enum GamePieceType {
         LINE(new int[][]{{0, 0, 0}, {1, 1, 1}, {0, 0, 0}}, "Line", 1),
         C(new int[][]{{0, 0, 0}, {1, 1, 1}, {1, 0, 1}}, "C", 2),
         PLUS(new int[][]{{0, 1, 0}, {1, 1, 1}, {0, 1, 0}}, "Plus", 3),
@@ -60,14 +60,40 @@ public class GamePiece {
         private final String name;
         private final int value;
 
-        GamePieceType(int[][] blocks, String name, int value){
+        /**
+         * The constructor for this enum
+         * @param blocks the two dimensional array representing the game piece
+         * @param name the name of the game piece
+         * @param value the value (colour) that represents the game piece
+         */
+        GamePieceType(int[][] blocks, String name, int value) {
             this.blocks = blocks;
             this.name = name;
             this.value = value;
         }
 
+        /**
+         * Creates a new game piece object
+         * @return the new object
+         */
         public GamePiece createPiece() {
             return new GamePiece(name, blocks, value);
+        }
+
+        /**
+         * Creates a new game piece object from a given game piece number
+         * @param pieceNumber the number of the game piece
+         * @return the new object
+         */
+        public static GamePiece createGamePiece(int pieceNumber) {
+            for (GamePieceType gamePieceType : GamePieceType.values()) {
+                if (gamePieceType.value == pieceNumber) {
+                    return gamePieceType.createPiece();
+                }
+            }
+
+            logger.error("Invalid game piece type: {}", pieceNumber);
+            return null;
         }
     }
 
