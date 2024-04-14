@@ -53,7 +53,7 @@ public class ChallengeScene extends BaseScene {
     /**
      * The UI copy of the game's score
      */
-    private final IntegerProperty score = new SimpleIntegerProperty(0);
+    protected final IntegerProperty score = new SimpleIntegerProperty(0);
 
     /**
      * The UI copy of the game level
@@ -63,7 +63,7 @@ public class ChallengeScene extends BaseScene {
     /**
      * The UI copy of the game lives
      */
-    private final IntegerProperty lives = new SimpleIntegerProperty(3);
+    protected final IntegerProperty lives = new SimpleIntegerProperty(3);
 
     /**
      * The UI copy of the game's score multiplier
@@ -78,17 +78,17 @@ public class ChallengeScene extends BaseScene {
     /**
      * The main GameBoard component which the game is played on
      */
-    private GameBoard gameBoard;
+    protected GameBoard gameBoard;
 
     /**
      * The PieceBoard component that holds the current piece
      */
-    private PieceBoard currentPieceBoard;
+    protected PieceBoard currentPieceBoard;
 
     /**
      * The PieceBoard component that holds the following piece
      */
-    private PieceBoard followingPieceBoard;
+    protected PieceBoard followingPieceBoard;
 
     /**
      * The highscore label, needed so I can rebind the value at a later date
@@ -98,7 +98,7 @@ public class ChallengeScene extends BaseScene {
     /**
      * The rectangle representing the timer
      */
-    private Rectangle timerBar;
+    protected Rectangle timerBar;
 
     /**
      * The Timeline of the timer which handles all the keyframes for smoothly changing the timerBar scale and colour
@@ -288,13 +288,13 @@ public class ChallengeScene extends BaseScene {
     /**
      * Gets the initial highscore and displays it
      */
-    private void getInitialHighScore() {
+    protected void getInitialHighScore() {
         String userDir = System.getProperty("user.dir");
         File scoresFile = Paths.get(userDir, "data", "scores.txt").toFile();
 
         // Handle if the scores file does not exist
         if (!scoresFile.exists()) {
-            logger.warn("Scores file does not exist. Filepath tried: " + scoresFile.getPath());
+            logger.warn("Scores file does not exist. Filepath tried: {}", scoresFile.getPath());
         }
 
         // Load the high score
@@ -321,7 +321,7 @@ public class ChallengeScene extends BaseScene {
             highScoreLabel.textProperty().bind(highscore.asString("%d"));
 
         } catch (IOException e) {
-            logger.error("Could not open scores file: " + scoresFile.getPath());
+            logger.error("Could not open scores file: {}", scoresFile.getPath());
             logger.debug(e);
             return;
 
@@ -338,7 +338,7 @@ public class ChallengeScene extends BaseScene {
     /**
      * Resets the timer bar
      */
-    private void resetTimerBar() {
+    protected void resetTimerBar() {
         // Reset any existing timeline
         if (timeline != null) {
             timeline.stop();
@@ -416,7 +416,7 @@ public class ChallengeScene extends BaseScene {
      * Tells the game object to rotate the current piece when a block in the piece is clicked
      * @param gameBlock the game block that was clicked
      */
-    private void currentPieceBoardClicked(GameBlock gameBlock) {
+    protected void currentPieceBoardClicked(GameBlock gameBlock) {
         this.getGame().rotateCurrentPiece();
     }
 
@@ -424,7 +424,7 @@ public class ChallengeScene extends BaseScene {
      * Handle when a block is clicked
      * @param gameBlock the Game Block that was clocked
      */
-    private void blockClicked(GameBlock gameBlock) {
+    protected void blockClicked(GameBlock gameBlock) {
         this.getGame().blockClicked(gameBlock);
     }
 
@@ -441,7 +441,7 @@ public class ChallengeScene extends BaseScene {
         gameBoard.fadeOut(gameBlockCoordinates);
 
         // Check if the highscore has been broken, if so then update it
-        if (this.getGame().score.getValue() > highscore.getValue()) {
+        if (this.getGame().score.getValue() > highscore.getValue() && this.highScoreLabel != null) {
             highScoreLabel.textProperty().unbind();
             highScoreLabel.textProperty().bind(score.asString("%d"));
         }

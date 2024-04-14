@@ -324,7 +324,7 @@ public class Game {
      * @param numOfLines the number of lines cleared
      * @param numOfBlocks the number of blocks cleared
      */
-    private void calculateNewScore(int numOfLines, int numOfBlocks) {
+    protected void calculateNewScore(int numOfLines, int numOfBlocks) {
         int addedScore = numOfLines * numOfBlocks * 10 * this.multiplier.get();
         this.score.set(this.score.get() + addedScore);
     }

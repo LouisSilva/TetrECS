@@ -210,8 +210,9 @@ TextField {
 
 .sidebar {
     -fx-alignment: center;
-    -fx-pref-width: 200px;
+    -fx-pref-width: 250px;
     -fx-spacing: 10px;
+    -fx-wrap-text: true;
 }
 
 .menu-header {

@@ -106,8 +106,17 @@ public class MultiplayerGame extends Game {
     }
 
     /**
+     * Calculates the new score after a line is cleared
+     * @param numOfLines the number of lines cleared
+     * @param numOfBlocks the number of blocks cleared
+     */
+    protected void calculateNewScore(int numOfLines, int numOfBlocks) {
+        super.calculateNewScore(numOfLines, numOfBlocks);
+        this.communicator.send("SCORE " + this.score.get());
+    }
+
+    /**
      * Public method that a scene can call to end the game.
-     *
      */
     @Override
     public void remoteEndGame() {
