@@ -1,5 +1,6 @@
 package uk.ac.soton.comp1206.scene;
 
+import javafx.animation.RotateTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
@@ -7,6 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.ui.GamePane;
@@ -38,7 +40,7 @@ public class MenuScene extends BaseScene {
      */
     @Override
     public void build() {
-        logger.info("Building " + this.getClass().getName());
+        logger.info("Building {}", this.getClass().getName());
         root = new GamePane(gameWindow.getWidth(),gameWindow.getHeight());
 
         var menuPane = new StackPane();
@@ -60,6 +62,14 @@ public class MenuScene extends BaseScene {
         titleImageView.setFitWidth(600);
         header.getChildren().add(titleImageView);
         mainPane.setTop(header);
+
+        // Set title rotate animation
+        RotateTransition rotateTransition = new RotateTransition(Duration.seconds(4), titleImageView);
+        rotateTransition.setFromAngle(-10);
+        rotateTransition.setToAngle(10);
+        rotateTransition.setAutoReverse(true);
+        rotateTransition.setCycleCount(RotateTransition.INDEFINITE);
+        rotateTransition.play();
 
         VBox buttonContainer = new VBox(10);
         buttonContainer.getStyleClass().add("menu-button-container");
