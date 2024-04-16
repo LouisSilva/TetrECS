@@ -1,6 +1,7 @@
 package uk.ac.soton.comp1206.scene;
 
 import javafx.application.Platform;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -25,6 +26,7 @@ import uk.ac.soton.comp1206.ui.GameWindow;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MultiplayerScene extends ChallengeScene {
     /**
@@ -33,8 +35,6 @@ public class MultiplayerScene extends ChallengeScene {
     private static final Logger logger = LogManager.getLogger(MultiplayerScene.class);
 
     private MultiplayerGame game;
-
-    private Leaderboard leaderboard;
 
     private final int maxLeaderboardEntries = 5;
 
@@ -145,11 +145,11 @@ public class MultiplayerScene extends ChallengeScene {
         List<Leaderboard.LeaderboardEntry> leaderboardEntryList = new ArrayList<>();
         ObservableList<Leaderboard.LeaderboardEntry> observableLeaderboardEntryList = FXCollections.observableArrayList(leaderboardEntryList);
         this.leaderboardEntries = new SimpleListProperty<>(observableLeaderboardEntryList);
-        this.leaderboard = new Leaderboard();
-        this.leaderboard.getLeaderboardEntries().bind(this.leaderboardEntries);
+        Leaderboard leaderboard = new Leaderboard();
+        leaderboard.getLeaderboardEntries().bind(this.leaderboardEntries);
         this.gameWindow.getCommunicator().addListener(this::handleServerMessage);
 
-        sidebar.getChildren().addAll(versesLabel, this.leaderboard, incomingLabel, currentPieceBoard, followingPieceBoard);
+        sidebar.getChildren().addAll(versesLabel, leaderboard, incomingLabel, currentPieceBoard, followingPieceBoard);
 
         // Build footer with timer
         StackPane footer = new StackPane();
@@ -184,8 +184,9 @@ public class MultiplayerScene extends ChallengeScene {
             // Parse and load the scores
             Platform.runLater(() -> {
                 List<Leaderboard.LeaderboardEntry> scores = parseStringScores(msg);
-
                 scores.sort(Comparator.comparingInt(Leaderboard.LeaderboardEntry::getScore).reversed()); // Sort list of scores
+
+                this.game.allScores = scores.stream().map(leaderboardEntry -> new ScoresScene.Score(leaderboardEntry.getName(), leaderboardEntry.getScore())).collect(Collectors.toList());
                 List<Leaderboard.LeaderboardEntry> finalScores = scores.subList(0, Math.min(maxLeaderboardEntries, scores.size()));
                 leaderboardEntries.set(FXCollections.observableArrayList(finalScores));
             });

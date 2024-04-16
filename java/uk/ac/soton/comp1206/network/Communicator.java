@@ -113,8 +113,10 @@ public class Communicator {
      * @param message the message that was received
      */
     private void receive(WebSocket websocket, String message) {
-        if (!message.startsWith("HISCORES")) // Don't print all the high-scores into the terminal, its annoying
-            logger.info("Received: {}", message);
+        if (message.startsWith("HISCORES"))
+            logger.info("Received {} high-scores", message.substring("HISCORES ".length()).split("\n").length);
+
+        else logger.info("Received: {}", message);
 
         for(CommunicationsListener handler : handlers) {
             handler.receiveCommunication(message);

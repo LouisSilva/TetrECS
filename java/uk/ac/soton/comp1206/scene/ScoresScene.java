@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.ScoresList;
 import uk.ac.soton.comp1206.game.Game;
+import uk.ac.soton.comp1206.game.MultiplayerGame;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
@@ -110,13 +111,8 @@ public class ScoresScene extends BaseScene {
         });
 
         this.loadOnlineScores();
-        this.loadLocalScores(null);
-
-        // Allows time for the online scores to be fetched
-        waitAsync(1, TimeUnit.SECONDS).thenRun(() -> {
-            this.localScoresListComponent.revealScores();
-            this.onlineScoresListComponent.revealScores();
-        });
+        if (this.finishedGame instanceof MultiplayerGame) this.loadMultiplayerGameScores();
+        else this.loadLocalScores(null);
     }
 
     /**
@@ -233,8 +229,19 @@ public class ScoresScene extends BaseScene {
                 scores.sort(Comparator.comparingInt(Score::getScore).reversed()); // Sort list of scores
                 List<Score> finalScores = scores.subList(0, Math.min(maxScoreArraySize, scores.size()));
                 remoteScores.set(FXCollections.observableArrayList(finalScores));
+                this.onlineScoresListComponent.revealScores();
             });
         }
+    }
+
+    /**
+     * Loads the scores from the current multiplayer game
+     */
+    private void loadMultiplayerGameScores() {
+        MultiplayerGame finishedMultiplayerGame = (MultiplayerGame) this.finishedGame;
+        finishedMultiplayerGame.allScores.subList(0, Math.min(maxScoreArraySize, finishedMultiplayerGame.allScores.size()));
+        this.localScores.set(FXCollections.observableArrayList(finishedMultiplayerGame.allScores));
+        this.localScoresListComponent.revealScores();
     }
 
     /**
@@ -255,7 +262,7 @@ public class ScoresScene extends BaseScene {
 
         // Check if file exists, if not then create some dummy scores
         if (!scoresFile.exists()) {
-            logger.info("Could find scores file: " + filePath + ", creating a new file");
+            logger.info("Could find scores file: {}, creating a new file", filePath);
 
             scores.add(new Score("Jeff", 1));
             scores.add(new Score("Bob", 2));
@@ -275,7 +282,7 @@ public class ScoresScene extends BaseScene {
             }
 
         } catch (IOException e) {
-            logger.info("Could not open scores file: " + filePath);
+            logger.info("Could not open scores file: {}", filePath);
             logger.debug(e);
             return;
 
@@ -295,13 +302,14 @@ public class ScoresScene extends BaseScene {
             nameDialog.setHeaderText("You have a highscore! Please enter your username for the local scoreboard");
             nameDialog.setContentText("Name: ");
 
-            nameDialog.showAndWait().ifPresent(name -> scores.add(new Score(name, finishedGame.score.getValue())));
+            nameDialog.showAndWait().ifPresent(name -> scores.add(new Score(name, this.finishedGame.score.getValue())));
         }
 
         scores.sort(Comparator.comparingInt(Score::getScore).reversed()); // Sort list of scores
         List<Score> finalScores = scores.subList(0, Math.min(maxScoreArraySize, scores.size()));
-        localScores.set(FXCollections.observableArrayList(finalScores));
+        this.localScores.set(FXCollections.observableArrayList(finalScores));
         writeLocalScores(scoresFile.getPath(), scores); // Write the new scores
+        this.localScoresListComponent.revealScores();
     }
 
     /**
@@ -314,7 +322,7 @@ public class ScoresScene extends BaseScene {
         try {
             // Create file if it doesn't already exist
             if (!file.exists() && !file.createNewFile()) {
-                logger.info("Failed to create scores file: " + filePath);
+                logger.info("Failed to create scores file: {}", filePath);
                 return;
             }
 
@@ -328,7 +336,7 @@ public class ScoresScene extends BaseScene {
                 }
             }
         } catch (IOException e) {
-            logger.info("Could not open scores file: " + filePath, e);
+            logger.info("Could not open scores file: {}", filePath, e);
         }
     }
 

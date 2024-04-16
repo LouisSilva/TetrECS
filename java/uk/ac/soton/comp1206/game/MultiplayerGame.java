@@ -3,8 +3,11 @@ package uk.ac.soton.comp1206.game;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.network.Communicator;
+import uk.ac.soton.comp1206.scene.ScoresScene;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 public class MultiplayerGame extends Game {
@@ -16,6 +19,8 @@ public class MultiplayerGame extends Game {
     private final Communicator communicator;
 
     private final Queue<GamePiece> receivedGamePieces = new LinkedList<>();
+
+    public List<ScoresScene.Score> allScores = new ArrayList<>();
 
     /**
      * Create a new game with the specified rows and columns. Creates a corresponding grid model.
