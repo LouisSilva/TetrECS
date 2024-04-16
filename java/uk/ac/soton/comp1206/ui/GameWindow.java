@@ -9,6 +9,7 @@ import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.App;
+import uk.ac.soton.comp1206.game.Multimedia;
 import uk.ac.soton.comp1206.network.Communicator;
 import uk.ac.soton.comp1206.scene.*;
 
@@ -33,7 +34,9 @@ public class GameWindow {
     private BaseScene currentScene;
     private Scene scene;
 
-    Communicator communicator;
+    private final Communicator communicator;
+
+    private Multimedia multimedia;
 
     /**
      * Create a new GameWindow attached to the given stage with the specified width and height

@@ -14,7 +14,10 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import uk.ac.soton.comp1206.game.Multimedia;
 import uk.ac.soton.comp1206.network.Communicator;
+
+import java.util.Arrays;
 
 /**
  * A custom component for making a chat window
@@ -41,20 +44,10 @@ public class ChatWindow extends BorderPane {
     private final TextField messageToSendTextField;
 
     /**
-     * The scroll pane which holds the text flow and text field together
-     */
-    private final ScrollPane messageScrollPane;
-
-    /**
      * The button that starts the game if the user is the host
      * It only shows if the user is the host, otherwise it is disabled and invisible
      */
     private final Button startGameButton;
-
-    /**
-     * Controls whether the scroll pane should scroll to the bottom
-     */
-    private boolean scrollToBottom = false;
 
     /**
      * The constructor for this component
@@ -96,12 +89,12 @@ public class ChatWindow extends BorderPane {
         this.recievedMessagesTextFlow.getStyleClass().add("chat-window-text-flow");
 
         // Add the scroller
-        this.messageScrollPane = new ScrollPane();
-        this.messageScrollPane.getStylesheets().clear();
-        this.messageScrollPane.getStyleClass().add("chat-window-scroll-pane");
-        this.messageScrollPane.setContent(this.recievedMessagesTextFlow);
-        this.messageScrollPane.setFitToWidth(true);
-        this.setCenter(this.messageScrollPane);
+        ScrollPane messageScrollPane = new ScrollPane();
+        messageScrollPane.getStylesheets().clear();
+        messageScrollPane.getStyleClass().add("chat-window-scroll-pane");
+        messageScrollPane.setContent(this.recievedMessagesTextFlow);
+        messageScrollPane.setFitToWidth(true);
+        this.setCenter(messageScrollPane);
     }
 
     /**
@@ -144,34 +137,23 @@ public class ChatWindow extends BorderPane {
             }
         }
 
-        else {
-            // Split message into key and value
-            String[] msgSplit = msg.split(" ");
-            if (msgSplit.length <= 1) return;
-            String keyword = msgSplit[0];
-            msg = msg.substring(keyword.length() + 1);
+        // Handles when a message is received
+        else if (msg.startsWith("MSG")) {
+            msg = msg.substring("MSG ".length());
+            String[] msgSplit = msg.split(":");
 
-            // Handles when a message is received
-            if (keyword.equals("MSG")) {
-                msgSplit = msg.split(":");
-                if (msgSplit.length <= 1) {
-                    logger.error("Message received from server only had {} parts", msgSplit.length);
-                    return;
-                }
-
-                String username = msgSplit[0];
-                msg = msg.substring(username.length() + 1);
-
-                String finalMsg = msg;
-                Platform.runLater(() -> {
-                    Text receivedMessage = new Text(username + ": " + finalMsg + "\n");
-                    receivedMessage.getStyleClass().add("chat-window-message");
-                    this.recievedMessagesTextFlow.getChildren().add(receivedMessage);
-                    if (this.messageScrollPane.getVvalue() == 0.0f || this.messageScrollPane.getVvalue() > 0.9f) {
-                        this.scrollToBottom = true;
-                    }
-                });
+            if (msgSplit.length <= 1) {
+                logger.error("Message received from server only had {} parts", msgSplit.length);
+                return;
             }
+
+            Platform.runLater(() -> {
+                Text receivedMessage = new Text(msgSplit[0] + ": " + msgSplit[1] + "\n");
+                receivedMessage.getStyleClass().add("chat-window-message");
+                this.recievedMessagesTextFlow.getChildren().add(receivedMessage);
+                Multimedia.getInstance().playAudioFile("message.wav");
+            });
+
         }
     }
 
@@ -182,22 +164,18 @@ public class ChatWindow extends BorderPane {
      */
     private void sendMessage(String msg) {
         // Check if the user is trying to change their nickname first
-        if (msg.startsWith("/nickname ") || msg.startsWith("/NICKNAME ") || msg.startsWith("/Nickname ") || msg.startsWith("/nick")) {
+        logger.debug(msg);
+        if (msg.startsWith("/nickname ") || msg.startsWith("/NICKNAME ") || msg.startsWith("/Nickname ")) {
             this.communicator.send("NICK " + msg.substring("/nickname ".length()));
+            messageToSendTextField.clear();
+        }
+        else if (msg.startsWith("/nick")) {
+            this.communicator.send("NICK " + msg.substring("/nick ".length()));
             messageToSendTextField.clear();
         }
         else {
             this.communicator.send("MSG " + msg.strip());
             messageToSendTextField.clear();
         }
-    }
-
-    /**
-     * Scrolls the scroll pane to the bottom by controlling the boolean
-     */
-    public void jumpScrollerToBottom() {
-        if (!this.scrollToBottom) return;
-        this.messageScrollPane.setVvalue(1.0f);
-        this.scrollToBottom = false;
     }
 }

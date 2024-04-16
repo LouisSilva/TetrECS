@@ -25,6 +25,7 @@ import uk.ac.soton.comp1206.component.GameBoard;
 import uk.ac.soton.comp1206.component.PieceBoard;
 import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.game.GamePiece;
+import uk.ac.soton.comp1206.game.Multimedia;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
@@ -34,6 +35,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The Single Player challenge scene. Holds the UI for the single player challenge mode in the game.
@@ -263,6 +266,7 @@ public class ChallengeScene extends BaseScene {
         this.getGame().setGameLoopListener(this::resetTimerBar);
         this.getGame().setLineClearedListener(this::fadeOut);
         this.getGame().setEndGameListener(this::handleEndGame);
+        this.getGame().setPlayAudioListener(this::handlePlayAudio);
     }
 
     /**
@@ -283,6 +287,10 @@ public class ChallengeScene extends BaseScene {
         getScene().setOnMouseClicked(this::handleRightClick);
 
         getInitialHighScore();
+
+        // Play background music
+        Multimedia.getInstance().playBackgroundMusic("game_start.wav");
+        waitAsync(46, TimeUnit.SECONDS).thenRun(() -> Multimedia.getInstance().playBackgroundMusic("game.wav"));
     }
 
     /**
@@ -373,6 +381,7 @@ public class ChallengeScene extends BaseScene {
      */
     private void rotatePiece(GamePiece currentGamePiece) {
         this.currentPieceBoard.displayPiece(currentGamePiece);
+        Multimedia.getInstance().playAudioFile("rotate.wav");
     }
 
     /**
@@ -422,7 +431,7 @@ public class ChallengeScene extends BaseScene {
 
     /**
      * Handle when a block is clicked
-     * @param gameBlock the Game Block that was clocked
+     * @param gameBlock the Game Block that was clicked
      */
     protected void blockClicked(GameBlock gameBlock) {
         this.getGame().blockClicked(gameBlock);
@@ -439,12 +448,21 @@ public class ChallengeScene extends BaseScene {
      */
     private void fadeOut(Set<GameBlockCoordinate> gameBlockCoordinates) {
         gameBoard.fadeOut(gameBlockCoordinates);
+        Multimedia.getInstance().playAudioFile("clear.wav");
 
         // Check if the highscore has been broken, if so then update it
         if (this.getGame().score.getValue() > highscore.getValue() && this.highScoreLabel != null) {
             highScoreLabel.textProperty().unbind();
             highScoreLabel.textProperty().bind(score.asString("%d"));
         }
+    }
+
+    /**
+     * Plays an audio file given by the listener
+     * @param audioFile the audio file to play
+     */
+    private void handlePlayAudio(String audioFile) {
+        Multimedia.getInstance().playAudioFile(audioFile);
     }
 
     /**
@@ -485,5 +503,22 @@ public class ChallengeScene extends BaseScene {
      */
     protected Game getGame() {
         return this.game;
+    }
+
+    /**
+     * Waits on the thread that it was called in for a specified time
+     * @param time the amount of time to wait for
+     * @param unit the unit of time to be used on the time parameter
+     * @return the completable future
+     */
+    private static CompletableFuture<Void> waitAsync(long time, TimeUnit unit) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                unit.sleep(time);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
+        });
     }
 }

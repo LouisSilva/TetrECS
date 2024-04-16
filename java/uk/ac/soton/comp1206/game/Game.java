@@ -98,6 +98,11 @@ public class Game {
     private EndGameListener endGameListener;
 
     /**
+     * A listener for playing audio in the scene
+     */
+    private PlayAudioListener playAudioListener;
+
+    /**
      * The scheduler which is used as a timer for the game loop
      */
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -248,6 +253,9 @@ public class Game {
         if (grid.playPiece(this.getCurrentPiece(), x, y)) {
             this.handlePlayPiece();
         }
+        else if (this.playAudioListener != null){
+            this.playAudioListener.playAudio("fail.wav");
+        }
     }
 
     /**
@@ -255,6 +263,7 @@ public class Game {
      * This is in a separate method so it can be overridden
      */
     protected void handlePlayPiece() {
+        if (this.playAudioListener != null) this.playAudioListener.playAudio("place.wav");
         this.nextPiece();
         this.resetTimer();
         this.gameLoopListener.onGameLoop();
@@ -345,7 +354,11 @@ public class Game {
      * Calculates the level after a game piece is played
      */
     private void calculateNewLevel() {
+        int oldLevel = this.level.get();
         this.level.set(((this.score.get() / 1000) * 1000) / 1000);
+        if (oldLevel < this.level.get() && this.playAudioListener != null) {
+            this.playAudioListener.playAudio("level.wav");
+        }
     }
 
     /**
@@ -404,6 +417,7 @@ public class Game {
      */
     protected void loseLife() {
         lives.set(lives.get() - 1);
+        if (this.playAudioListener != null) this.playAudioListener.playAudio("lifelose.wav");
     }
 
     /**
@@ -453,6 +467,13 @@ public class Game {
         this.endGameListener = listener;
     }
 
+    /**
+     * Sets the given PlayAudioListener
+     * @param listener the PlayAudioListener instance
+     */
+    public void setPlayAudioListener(PlayAudioListener listener) {
+        this.playAudioListener = listener;
+    }
     /**
      * Calculates the timer delay based on the current level of the game
      * @return the timer delay in milliseconds

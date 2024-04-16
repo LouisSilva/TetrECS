@@ -11,6 +11,7 @@ import javafx.scene.layout.*;
 import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import uk.ac.soton.comp1206.game.Multimedia;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
@@ -93,6 +94,7 @@ public class MenuScene extends BaseScene {
         instructionsButton.setOnAction(this::switchToInstructionsMenu);
         multiplayerButton.setOnAction(this::switchToLobby);
         exitButton.setOnAction(this::exitGame);
+
     }
 
     /**
@@ -100,7 +102,7 @@ public class MenuScene extends BaseScene {
      */
     @Override
     public void initialise() {
-
+        Multimedia.getInstance().playBackgroundMusic("menu.mp3");
     }
 
     /**

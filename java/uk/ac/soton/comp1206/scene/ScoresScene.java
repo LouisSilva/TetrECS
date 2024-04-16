@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.ScoresList;
 import uk.ac.soton.comp1206.game.Game;
+import uk.ac.soton.comp1206.game.Multimedia;
 import uk.ac.soton.comp1206.game.MultiplayerGame;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
@@ -110,6 +111,10 @@ public class ScoresScene extends BaseScene {
             }
         });
 
+        // Play music
+        Multimedia.getInstance().playBackgroundMusic("end.wav");
+
+        // Load scores
         this.loadOnlineScores();
         if (this.finishedGame instanceof MultiplayerGame) this.loadMultiplayerGameScores();
         else this.loadLocalScores(null);
@@ -381,22 +386,5 @@ public class ScoresScene extends BaseScene {
         }
 
         return scoresArr;
-    }
-
-    /**
-     * Waits on the thread that it was called in for a specified time
-     * @param time the amount of time to wait for
-     * @param unit the unit of time to be used on the time parameter
-     * @return the completable future
-     */
-    private static CompletableFuture<Void> waitAsync(long time, TimeUnit unit) {
-        return CompletableFuture.runAsync(() -> {
-            try {
-                unit.sleep(time);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException(e);
-            }
-        });
     }
 }

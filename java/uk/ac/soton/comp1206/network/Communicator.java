@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class Communicator {
 
-    private static final Logger logger = LogManager.getLogger(Communicator.class);
+    private static final Logger logger = LogManager.getLogger("Communicator");
 
     /**
      * Attached communication listeners listening to messages on this Communicator. Each will be sent any messages.
@@ -88,7 +88,6 @@ public class Communicator {
      */
     public void send(String message) {
         logger.info("Sending message: {}", message);
-
         ws.sendText(message);
     }
 
@@ -114,7 +113,7 @@ public class Communicator {
      */
     private void receive(WebSocket websocket, String message) {
         if (message.startsWith("HISCORES"))
-            logger.info("Received {} high-scores", message.substring("HISCORES ".length()).split("\n").length);
+            logger.debug("Received {} high-scores", message.substring("HISCORES ".length()).split("\n").length);
 
         else logger.info("Received: {}", message);
 

@@ -2,13 +2,18 @@
 <Configuration status="INFO">
     <Appenders>
         <Console name="console" target="SYSTEM_OUT">
-            <PatternLayout
-                    pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n" />
+            <PatternLayout pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n" />
+        </Console>
+        <Console name="Communicator" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n" />
         </Console>
     </Appenders>
     <Loggers>
         <Root level="debug" additivity="false">
             <AppenderRef ref="console" />
         </Root>
+        <Logger name="Communicator" level="debug" additivity="false">
+            <AppenderRef ref="Communicator"/>
+        </Logger>
     </Loggers>
 </Configuration>
