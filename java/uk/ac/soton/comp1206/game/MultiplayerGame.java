@@ -10,16 +10,29 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+/**
+ * An extension of the Game object for a multiplayer game
+ */
 public class MultiplayerGame extends Game {
+
     /**
-     * The logger used for debugging
+     * The logger for this class
      */
     private static final Logger logger = LogManager.getLogger(MultiplayerGame.class);
 
+    /**
+     * The communicator class for sending and receiving game information
+     */
     private final Communicator communicator;
 
+    /**
+     * A queue of pieces that all players use
+     */
     private final Queue<GamePiece> receivedGamePieces = new LinkedList<>();
 
+    /**
+     * A list of scores for the in-game leaderboard
+     */
     public List<ScoresScene.Score> allScores = new ArrayList<>();
 
     /**
@@ -27,6 +40,7 @@ public class MultiplayerGame extends Game {
      *
      * @param cols number of columns
      * @param rows number of rows
+     * @param communicator the communicator object used to get info to the server
      */
     public MultiplayerGame(int cols, int rows, Communicator communicator) {
         super(cols, rows);
@@ -37,6 +51,10 @@ public class MultiplayerGame extends Game {
         this.requestNextGamePiece(5);
     }
 
+    /**
+     * Handles what happens when a message is received from the server
+     * @param msg the incoming server message
+     */
     private void handleServerMessage(String msg) {
         if (msg.startsWith("PIECE")) {
             String receivedGamePieceType = msg.substring("PIECE ".length());
@@ -45,10 +63,17 @@ public class MultiplayerGame extends Game {
         }
     }
 
+    /**
+     * Sends a message to the server asking for the next piece
+     */
     private void requestNextGamePiece() {
         this.communicator.send("PIECE");
     }
 
+    /**
+     * Requests a given amount of next pieces from the server
+     * @param pieces the amount of pieces to request
+     */
     private void requestNextGamePiece(int pieces) {
         for (int i=0; i < pieces; i++) {
             requestNextGamePiece();

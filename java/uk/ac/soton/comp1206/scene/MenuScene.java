@@ -126,7 +126,7 @@ public class MenuScene extends BaseScene {
      * @param event the event generated from clicking on the multiplayer button
      */
     private void switchToLobby(ActionEvent event) {
-        gameWindow.loadScene(new LobbyScene(this.gameWindow));
+        gameWindow.startLobbyScene();
     }
 
     /**

@@ -14,17 +14,18 @@ import uk.ac.soton.comp1206.ui.GameWindow;
 public class App extends Application {
 
     /**
-     * Base resolution width
+     * The instance of this object
      */
-    private final int width = 800;
+    private static App instance;
 
     /**
-     * Base resolution height
+     * The logger for this class
      */
-    private final int height = 600;
-
-    private static App instance;
     private static final Logger logger = LogManager.getLogger(App.class);
+
+    /**
+     * The stage object
+     */
     private Stage stage;
 
     /**
@@ -56,7 +57,9 @@ public class App extends Application {
         logger.info("Opening game window");
 
         // Change the width and height in this class to change the base rendering resolution for all game parts
-        var gameWindow = new GameWindow(stage,width,height);
+        int width = 800;
+        int height = 600;
+        new GameWindow(stage, width, height);
 
         // Display the GameWindow
         stage.show();

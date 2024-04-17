@@ -5,14 +5,14 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Instances of GamePiece Represents the model of a specific Game Piece with it's block makeup.
- *
+ * <p>
  * The GamePiece class also contains a factory for producing a GamePiece of a particular shape, as specified by it's
  * number.
  */
 public class GamePiece {
 
     /**
-     * A logger for debugging
+     * The logger for this class
      */
     private static final Logger logger = LogManager.getLogger(GamePiece.class);
 
@@ -56,8 +56,19 @@ public class GamePiece {
         DIAGONAL(new int[][]{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}, "Diagonal", 14),
         DOUBLE(new int[][]{{0, 1, 0}, {0, 1, 0}, {0, 0, 0}}, "Double", 15);
 
+        /**
+         * The 2d array this game piece represents
+         */
         private final int[][] blocks;
+
+        /**
+         * The name of the game piece
+         */
         private final String name;
+
+        /**
+         * The value of the game piece, which represents the colour of the piece
+         */
         private final int value;
 
         /**
@@ -161,6 +172,8 @@ public class GamePiece {
 
     /**
      * Get the value at a specific coordinate
+     * @param x the x coordinate
+     * @param y the y coordinate
      * @return The value at the given coordinates
      */
     public int getValueAtCoordinate(int x, int y) {

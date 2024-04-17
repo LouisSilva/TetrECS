@@ -19,6 +19,9 @@ import uk.ac.soton.comp1206.component.GameBlockCoordinate;
  */
 public class Grid {
 
+    /**
+     * The logger for this class
+     */
     private static final Logger logger = LogManager.getLogger(Grid.class);
 
     /**
@@ -196,6 +199,10 @@ public class Grid {
         return sb.toString();
     }
 
+    /**
+     * Gets the coordinates for the grid centre
+     * @return the GameBlockCoordinate object representing the grid centre
+     */
     public GameBlockCoordinate getGridCentre() {
         int centreRow = (this.getRows() - 1) / 2;
         int centreCol = (this.getCols() - 1) / 2;
@@ -203,6 +210,9 @@ public class Grid {
         return new GameBlockCoordinate(centreRow, centreCol);
     }
 
+    /**
+     * Sets all pieces in the grid to nothing, effectively clearing the grid
+     */
     public void clearGrid() {
         for(var y = 0; y < this.getRows(); y++) {
             for(var x = 0; x < this.getCols(); x++) {

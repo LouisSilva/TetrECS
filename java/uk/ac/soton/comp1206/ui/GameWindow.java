@@ -16,27 +16,52 @@ import uk.ac.soton.comp1206.scene.*;
 /**
  * The GameWindow is the single window for the game where everything takes place. To move between screens in the game,
  * we simply change the scene.
- *
+ * <p>
  * The GameWindow has methods to launch each of the different parts of the game by switching scenes. You can add more
  * methods here to add more screens to the game.
  */
 public class GameWindow {
 
+    /**
+     * The logger for this class
+     */
     private static final Logger logger = LogManager.getLogger(GameWindow.class);
 
+    /**
+     * A boolean to control whether multiplayer is enabled.
+     * This is used solely for testing
+     */
     private static final boolean communicatorEnabled = true;
 
+    /**
+     * The width of the window in pixels
+     */
     private final int width;
+
+    /**
+     * The height of the window in pixels
+     */
     private final int height;
 
+    /**
+     * The Stage object
+     */
     private final Stage stage;
 
+    /**
+     * The BaseScene object
+     */
     private BaseScene currentScene;
+
+    /**
+     * The scene object
+     */
     private Scene scene;
 
+    /**
+     * The communicator object
+     */
     private final Communicator communicator;
-
-    private Multimedia multimedia;
 
     /**
      * Create a new GameWindow attached to the given stage with the specified width and height

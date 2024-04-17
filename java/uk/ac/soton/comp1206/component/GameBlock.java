@@ -152,12 +152,8 @@ public class GameBlock extends Canvas {
         if (!this.isPartOfGameBoard) return;
 
         switch (enterOrExit) {
-            case ENTER -> {
-                this.paintHover();
-            }
-            case EXIT -> {
-                this.paint();
-            }
+            case ENTER -> this.paintHover();
+            case EXIT -> this.paint();
         }
     }
 

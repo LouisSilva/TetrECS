@@ -9,24 +9,37 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * The Game Pane is a special pane which will scale anything inside it to the screen and maintain the aspect ratio.
- *
+ * <p>
  * Drawing will be scaled appropriately.
- *
+ * <p>
  * This takes the worry about the layout out and will allow the game to scale to any resolution easily.
- *
+ * <p>
  * It uses the width and height given which should match the main window size. This will be the base drawing resolution,
  * but will be scaled up or down as the window is resized.
- *
+ * <p>
  * You should not need to modify this class
  */
 public class GamePane extends StackPane {
 
+    /**
+     * The logger for this class
+     */
     private static final Logger logger = LogManager.getLogger(GamePane.class);
 
+    /**
+     * The width of the game pane
+     */
     private final int width;
+
+    /**
+     * The height of the game pane
+     */
     private final int height;
+
+    /**
+     * The scale of the game pane
+     */
     private double scalar = 1;
-    private final boolean autoScale = true;
 
     /**
      * Create a new scalable GamePane with the given drawing width and height.
@@ -58,33 +71,30 @@ public class GamePane extends StackPane {
     public void layoutChildren() {
         super.layoutChildren();
 
+        boolean autoScale = true;
         if(!autoScale) {
             return;
         }
 
-        //Work out the scale factor height and width
+        // Work out the scale factor height and width
         var scaleFactorHeight = getHeight() / height;
         var scaleFactorWidth = getWidth() / width;
 
-        //Work out whether to scale by width or height
-        if (scaleFactorHeight > scaleFactorWidth) {
-            setScalar(scaleFactorWidth);
-        } else {
-            setScalar(scaleFactorHeight);
-        }
+        // Work out whether to scale by width or height
+        setScalar(Math.min(scaleFactorHeight, scaleFactorWidth));
 
-        //Set up the scale
+        // Set up the scale
         Scale scale = new Scale(scalar,scalar);
 
-        //Get the parent width and height
+        // Get the parent width and height
         var parentWidth = getWidth();
         var parentHeight = getHeight();
 
-        //Get the padding needed on the top and left
+        // Get the padding needed on the top and left
         var paddingLeft = (parentWidth - (width * scalar)) / 2.0;
         var paddingTop = (parentHeight - (height * scalar)) / 2.0;
 
-        //Perform the transformation
+        // Perform the transformation
         Translate translate = new Translate(paddingLeft, paddingTop);
         scale.setPivotX(0);
         scale.setPivotY(0);

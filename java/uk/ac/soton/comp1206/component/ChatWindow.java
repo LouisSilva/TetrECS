@@ -17,8 +17,6 @@ import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.game.Multimedia;
 import uk.ac.soton.comp1206.network.Communicator;
 
-import java.util.Arrays;
-
 /**
  * A custom component for making a chat window
  */

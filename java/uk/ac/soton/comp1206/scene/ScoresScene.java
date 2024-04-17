@@ -24,8 +24,6 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * The scores scene which shows all of the local and online scores
@@ -55,17 +53,29 @@ public class ScoresScene extends BaseScene {
      */
     public record Score(String name, Integer score) {
 
+        /**
+         * Gets the name of the user
+         * @return the name of the user
+         */
         public String getName() {
             return name;
         }
 
+        /**
+         * Gets the score of the user
+         * @return the score of the user
+         */
         public int getScore() {
             return score;
         }
 
+        /**
+         * Returns a nicely formatted string representing this record
+         * @return the formatted string representing this record
+         */
         @Override
         public String toString() {
-            return MessageFormat.format("Name: ''{0}'', score: {1}", this.name(), this.getScore());
+            return MessageFormat.format("Name: {0}, score: {1}", this.name(), this.getScore());
         }
     }
 
@@ -92,6 +102,7 @@ public class ScoresScene extends BaseScene {
     /**
      * Create a new scene, passing in the GameWindow the scene will be displayed in
      * @param gameWindow the game window
+     * @param finishedGame the game object where the this class can get the scores from
      */
     public ScoresScene(GameWindow gameWindow, Game finishedGame) {
         super(gameWindow);

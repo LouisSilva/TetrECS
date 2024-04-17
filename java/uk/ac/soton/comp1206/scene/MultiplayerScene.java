@@ -1,7 +1,6 @@
 package uk.ac.soton.comp1206.scene;
 
 import javafx.application.Platform;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -28,16 +27,29 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * An extension of the challenge scene for playing multiplayer
+ */
 public class MultiplayerScene extends ChallengeScene {
+
     /**
-     * Logger for debugging
+     * The logger for this class
      */
     private static final Logger logger = LogManager.getLogger(MultiplayerScene.class);
 
+    /**
+     * The MultiplayerGame object that this scene represents visually
+     */
     private MultiplayerGame game;
 
+    /**
+     * The maximum allowed entries to display on the in-game leaderboard (not the scores scene leaderboard)
+     */
     private final int maxLeaderboardEntries = 5;
 
+    /**
+     * A list of leaderboard entries
+     */
     private SimpleListProperty<Leaderboard.LeaderboardEntry> leaderboardEntries;
 
     /**
@@ -49,6 +61,9 @@ public class MultiplayerScene extends ChallengeScene {
         super(gameWindow);
     }
 
+    /**
+     * Builds the scene
+     */
     @Override
     public void build() {
         logger.info("Building {}", this.getClass().getName());

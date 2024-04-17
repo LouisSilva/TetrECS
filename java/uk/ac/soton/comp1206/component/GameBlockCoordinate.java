@@ -4,7 +4,7 @@ import javafx.beans.NamedArg;
 
 /**
  * Represents a row and column representation of a block in the grid. Holds the x (column) and y (row).
- *
+ * <p>
  * Useful for use in a set or list or other form of collection.
  */
 public class GameBlockCoordinate {
@@ -99,8 +99,7 @@ public class GameBlockCoordinate {
      */
     @Override public boolean equals(Object obj) {
         if (obj == this) return true;
-        if (obj instanceof GameBlockCoordinate) {
-            GameBlockCoordinate other = (GameBlockCoordinate) obj;
+        if (obj instanceof GameBlockCoordinate other) {
             return getX() == other.getX() && getY() == other.getY();
         } else return false;
     }

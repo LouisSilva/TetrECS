@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ChannelsList extends VBox {
     /**
-     * Logger for debugging
+     * The logger for this class
      */
     private static final Logger logger = LogManager.getLogger(ChannelsList.class);
 
@@ -49,6 +49,7 @@ public class ChannelsList extends VBox {
 
     /**
      * The constructor for this component
+     * @param communicator the communicator object used to get the channels from the server
      */
     public ChannelsList(Communicator communicator) {
         this.communicator = communicator;

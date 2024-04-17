@@ -23,7 +23,7 @@ import uk.ac.soton.comp1206.event.*;
 public class Game {
 
     /**
-     * The logger used for debugging
+     * The logger for this class
      */
     private static final Logger logger = LogManager.getLogger(Game.class);
 

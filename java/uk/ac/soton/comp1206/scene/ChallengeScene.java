@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 public class ChallengeScene extends BaseScene {
 
     /**
-     * Logger for debugging
+     * The logger for this class
      */
     private static final Logger logger = LogManager.getLogger(ChallengeScene.class);
 
@@ -437,6 +437,10 @@ public class ChallengeScene extends BaseScene {
         this.getGame().blockClicked(gameBlock);
     }
 
+    /**
+     * Handles what happens when the game has ended
+     * @param finalGameObject the game object
+     */
     private void handleEndGame(Game finalGameObject) {
         this.gameWindow.loadScene(new ScoresScene(this.gameWindow, finalGameObject));
     }

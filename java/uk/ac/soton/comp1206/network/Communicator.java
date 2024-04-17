@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * Uses web sockets to talk to a web socket server and relays communication to attached listeners
- *
+ * <p>
  * YOU DO NOT NEED TO WORRY ABOUT THIS CLASS! Leave it be :-)
  */
 public class Communicator {
