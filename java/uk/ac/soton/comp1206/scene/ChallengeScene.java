@@ -418,7 +418,42 @@ public class ChallengeScene extends BaseScene {
             case ENTER, X -> this.getGame().dropCurrentPiece();
 
             case O -> this.getGame().remoteEndGame(); // only used for testing
+
+            case LEFT, RIGHT, UP, DOWN, W, A, S, D -> this.handleBlockSelectionByKeyboard(keyCode);
         }
+    }
+
+    /**
+     * Selects a new game block when the keyboard is used as the controls
+     * @param keyCode the key pressed
+     */
+    private void handleBlockSelectionByKeyboard(KeyCode keyCode) {
+        GameBlockCoordinate currentlySelectedGameBlockCoordinate = this.gameBoard.gameBlockCurrentlySelected.getCoordinates();
+        GameBlockCoordinate newCoordinate;
+
+        switch (keyCode) {
+            case UP, W -> newCoordinate = currentlySelectedGameBlockCoordinate.add(0, -1);
+            case DOWN, S -> newCoordinate = currentlySelectedGameBlockCoordinate.add(0, 1);
+            case LEFT, A -> newCoordinate = currentlySelectedGameBlockCoordinate.add(-1, 0);
+            case RIGHT, D -> newCoordinate = currentlySelectedGameBlockCoordinate.add(1, 0);
+            default -> {
+                logger.warn("The handleBlockSelectionByKeyboard method failed. This should not happen.");
+                newCoordinate = currentlySelectedGameBlockCoordinate.add(0, 0);
+            }
+        }
+
+        this.gameBoard.gameBlockCurrentlySelected = this.gameBoard.getBlock(newCoordinate.getX(), newCoordinate.getY());
+
+        // Clear any hover effects first
+        for (int y=0; y < this.gameBoard.getRows(); y++) {
+            for (int x=0; x < this.gameBoard.getCols(); x++) {
+                GameBlock currentBlock = this.gameBoard.getBlock(x, y);
+                currentBlock.onHover(GameBlock.EnterOrExit.EXIT);
+            }
+        }
+
+        // Apply the hover effect
+        this.gameBoard.gameBlockCurrentlySelected.onHover(GameBlock.EnterOrExit.ENTER);
     }
 
     /**

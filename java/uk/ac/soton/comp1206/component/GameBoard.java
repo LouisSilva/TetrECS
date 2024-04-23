@@ -62,6 +62,8 @@ public class GameBoard extends GridPane {
      */
     private BlockClickedListener blockClickedListener;
 
+    public GameBlock gameBlockCurrentlySelected;
+
 
     /**
      * Create a new GameBoard, based off a given grid, with a visual width and height.
@@ -101,13 +103,16 @@ public class GameBoard extends GridPane {
     }
 
     /**
-     * Get a specific block from the GameBoard, specified by it's row and column
+     * Get a specific block from the GameBoard, specified by it's row and column.
+     * It makes sure to wrap around the grid which is useful for the keyboard controls
      * @param x column
      * @param y row
      * @return game block at the given column and row
      */
     public GameBlock getBlock(int x, int y) {
-        return blocks[x][y];
+        int wrappedX = (x % blocks.length + blocks.length) % blocks.length;
+        int wrappedY = (y % blocks[0].length + blocks[0].length) % blocks[0].length;
+        return blocks[wrappedX][wrappedY];
     }
 
     /**
@@ -128,6 +133,8 @@ public class GameBoard extends GridPane {
                 createBlock(x, y);
             }
         }
+
+        gameBlockCurrentlySelected = this.getBlock(0, 0);
     }
 
     /**
@@ -174,6 +181,7 @@ public class GameBoard extends GridPane {
 
         switch (button) {
             case PRIMARY -> {
+                this.gameBlockCurrentlySelected = block;
                 if (blockClickedListener != null) {
                     blockClickedListener.blockClicked(block);
                 }
@@ -196,7 +204,7 @@ public class GameBoard extends GridPane {
      * Gets the amount of columns in the board
      * @return the amount of columns
      */
-    protected int getCols() {
+    public int getCols() {
         return this.cols;
     }
 
@@ -204,7 +212,7 @@ public class GameBoard extends GridPane {
      * Gets the amount of rows in the board
      * @return the amount of rows
      */
-    protected int getRows() {
+    public int getRows() {
         return this.rows;
     }
 

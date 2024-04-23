@@ -103,9 +103,14 @@ public class GameBlock extends Canvas {
     private final ObjectProperty<Double> fadeAnimationOpacity = new SimpleObjectProperty<>(1.0);
 
     /**
+     * The game board that the block belongs to
+     */
+    private final GameBoard parentGameBoard;
+
+    /**
      * An enum used to determine whether a mouse hover event is for the mouse exiting or entering the block
      */
-    private enum EnterOrExit {
+    public enum EnterOrExit {
         ENTER,
         EXIT
     }
@@ -123,6 +128,7 @@ public class GameBlock extends Canvas {
         this.height = height;
         this.x = x;
         this.y = y;
+        this.parentGameBoard = gameBoard;
 
         // A canvas needs a fixed width and height
         setWidth(width);
@@ -147,12 +153,18 @@ public class GameBlock extends Canvas {
      * Handles what happens when the mouse hovers over a block
      * @param enterOrExit whether the mouse entered the block or exited
      */
-    private void onHover(EnterOrExit enterOrExit) {
+    public void onHover(EnterOrExit enterOrExit) {
         if (this.inFadeOutAnimation) return;
         if (!this.isPartOfGameBoard) return;
 
         switch (enterOrExit) {
-            case ENTER -> this.paintHover();
+            case ENTER -> {
+                // Make sure to get rid of the hover effect on the previously hovered block
+                if (this.parentGameBoard.gameBlockCurrentlySelected != null) this.parentGameBoard.gameBlockCurrentlySelected.onHover(EnterOrExit.EXIT);
+
+                this.paintHover();
+                this.parentGameBoard.gameBlockCurrentlySelected = this;
+            }
             case EXIT -> this.paint();
         }
     }
@@ -336,6 +348,14 @@ public class GameBlock extends Canvas {
      */
     public int getValue() {
         return this.value.get();
+    }
+
+    /**
+     * Returns the game block coordinate for this block
+     * @return the game block coordinate for this block
+     */
+    public GameBlockCoordinate getCoordinates() {
+        return new GameBlockCoordinate(this.getX(), this.getY());
     }
 
     /**
