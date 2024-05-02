@@ -29,6 +29,13 @@ public class App extends Application {
     private Stage stage;
 
     /**
+     * The constructor for the app class
+     */
+    public App() {
+
+    }
+
+    /**
      * Start the game
      * @param args commandline arguments
      */

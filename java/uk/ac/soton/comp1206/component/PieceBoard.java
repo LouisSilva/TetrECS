@@ -29,7 +29,6 @@ public class PieceBoard extends GameBoard {
     /**
      * Create a new PieceBoard with it's own internal grid, specifying the number of columns and rows, along with the
      * visual width and height.
-     *
      * @param cols number of columns for internal grid
      * @param rows number of rows for internal grid
      * @param width the visual width
@@ -42,7 +41,6 @@ public class PieceBoard extends GameBoard {
     /**
      * Create a new PieceBoard with it's own internal grid, specifying the number of columns and rows, along with the
      * visual width and height.
-     * <p></p>
      * It also has a boolean parameter to control whether to show a white circle indicator on the centre of a displayed piece
      * @param cols number of columns for internal grid
      * @param rows number of rows for internal grid

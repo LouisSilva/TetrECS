@@ -24,14 +24,49 @@ public class ScoresList extends VBox {
      * An enum used to store all the colours that a label is set to in order
      */
     public enum LabelColours {
+        /**
+         * The pink colour
+         */
         PINK(Color.HOTPINK),
+
+        /**
+         * The red colour
+         */
         RED(Color.RED),
+
+        /**
+         * The orange colour
+         */
         ORANGE(Color.ORANGE),
+
+        /**
+         * The yellow colour
+         */
         YELLOW(Color.YELLOW),
+
+        /**
+         * The lime colour
+         */
         LIME(Color.LIME),
+
+        /**
+         * The green colour
+         */
         GREEN(Color.GREEN),
+
+        /**
+         * The dark green colour
+         */
         DARK_GREEN(Color.DARKGREEN),
+
+        /**
+         * The light blue colour
+         */
         LIGHT_BLUE(Color.LIGHTBLUE),
+
+        /**
+         * The blue colour
+         */
         BLUE(Color.BLUE);
 
         /**

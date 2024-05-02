@@ -42,6 +42,11 @@ public class GamePane extends StackPane {
     private double scalar = 1;
 
     /**
+     * Whether to automatically scale the game pane
+     */
+    protected boolean autoScale = true;
+
+    /**
      * Create a new scalable GamePane with the given drawing width and height.
      * @param width width
      * @param height height
@@ -71,8 +76,7 @@ public class GamePane extends StackPane {
     public void layoutChildren() {
         super.layoutChildren();
 
-        boolean autoScale = true;
-        if(!autoScale) {
+        if(!this.autoScale) {
             return;
         }
 

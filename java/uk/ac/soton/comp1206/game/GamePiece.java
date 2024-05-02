@@ -40,20 +40,79 @@ public class GamePiece {
      * Enum for better storage of all the game piece types
      */
     public enum GamePieceType {
+        /**
+         * The line piece
+         */
         LINE(new int[][]{{0, 0, 0}, {1, 1, 1}, {0, 0, 0}}, "Line", 1),
+
+        /**
+         * The C shaped piece
+         */
         C(new int[][]{{0, 0, 0}, {1, 1, 1}, {1, 0, 1}}, "C", 2),
+
+        /**
+         * The plus symbol shaped piece
+         */
         PLUS(new int[][]{{0, 1, 0}, {1, 1, 1}, {0, 1, 0}}, "Plus", 3),
+
+        /**
+         * The dot piece
+         */
         DOT(new int[][]{{0, 0, 0}, {0, 1, 0}, {0, 0, 0}}, "Dot", 4),
+
+        /**
+         * The square piece
+         */
         SQUARE(new int[][]{{1, 1, 0}, {1, 1, 0}, {0, 0, 0}}, "Square", 5),
+
+        /**
+         * The L shaped piece
+         */
         L(new int[][]{{0, 0, 0}, {1, 1, 1}, {0, 0, 1}}, "L", 6),
+
+        /**
+         * The J shaped piece
+         */
         J(new int[][]{{0, 0, 1}, {1, 1, 1}, {0, 0, 0}}, "J", 7),
+
+        /**
+         * The S shaped piece
+         */
         S(new int[][]{{0, 0, 0}, {0, 1, 1}, {1, 1, 0}}, "S", 8),
+
+        /**
+         * The Z shaped piece
+         */
         Z(new int[][]{{1, 1, 0}, {0, 1, 1}, {0, 0, 0}}, "Z", 9),
+
+        /**
+         * The T shaped piece
+         */
         T(new int[][]{{1, 0, 0}, {1, 1, 0}, {1, 0, 0}}, "T", 10),
+
+        /**
+         * The X shaped piece
+         */
         X(new int[][]{{1, 0, 1}, {0, 1, 0}, {1, 0, 1}}, "X", 11),
+
+        /**
+         * The corner piece
+         */
         CORNER(new int[][]{{0, 0, 0}, {1, 1, 0}, {1, 0, 0}}, "Corner", 12),
+
+        /**
+         * The inverse corner piece
+         */
         INVERSE_CORNER(new int[][]{{1, 0, 0}, {1, 1, 0}, {0, 0, 0}}, "Inverse Corner", 13),
+
+        /**
+         * The diagonal piece
+         */
         DIAGONAL(new int[][]{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}, "Diagonal", 14),
+
+        /**
+         * Thed double piece
+         */
         DOUBLE(new int[][]{{0, 1, 0}, {0, 1, 0}, {0, 0, 0}}, "Double", 15);
 
         /**

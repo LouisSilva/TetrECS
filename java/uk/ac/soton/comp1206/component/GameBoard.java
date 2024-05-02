@@ -62,6 +62,9 @@ public class GameBoard extends GridPane {
      */
     private BlockClickedListener blockClickedListener;
 
+    /**
+     * The game block that is currently selected by the player
+     */
     public GameBlock gameBlockCurrentlySelected;
 
 

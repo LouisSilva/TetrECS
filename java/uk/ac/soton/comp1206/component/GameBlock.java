@@ -111,7 +111,14 @@ public class GameBlock extends Canvas {
      * An enum used to determine whether a mouse hover event is for the mouse exiting or entering the block
      */
     public enum EnterOrExit {
+        /**
+         * The enter value
+         */
         ENTER,
+
+        /**
+         * The exit value
+         */
         EXIT
     }
 

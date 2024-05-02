@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -12,12 +13,14 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBoard;
 import uk.ac.soton.comp1206.component.Leaderboard;
 import uk.ac.soton.comp1206.component.PieceBoard;
 import uk.ac.soton.comp1206.game.Game;
+import uk.ac.soton.comp1206.game.Grid;
 import uk.ac.soton.comp1206.game.MultiplayerGame;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
@@ -25,6 +28,7 @@ import uk.ac.soton.comp1206.ui.GameWindow;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -51,6 +55,8 @@ public class MultiplayerScene extends ChallengeScene {
      * A list of leaderboard entries
      */
     private SimpleListProperty<Leaderboard.LeaderboardEntry> leaderboardEntries;
+
+    private OpponentBoardScene opponentBoardScene;
 
     /**
      * Create a new Single Player challenge scene
@@ -178,6 +184,8 @@ public class MultiplayerScene extends ChallengeScene {
         mainPane.setRight(sidebar);
 
         this.resetTimerBar();
+
+        this.openOpponentBoardDisplayer();
     }
 
     /**
@@ -205,6 +213,31 @@ public class MultiplayerScene extends ChallengeScene {
                 List<Leaderboard.LeaderboardEntry> finalScores = scores.subList(0, Math.min(maxLeaderboardEntries, scores.size()));
                 leaderboardEntries.set(FXCollections.observableArrayList(finalScores));
             });
+        }
+
+        else if(msg.startsWith("BOARD")) {
+            String[] parts = msg.substring("BOARD ".length()).split(":");
+            String opponentName = parts[0];
+            String[] values = parts[1].split(" ");
+
+            // Create grid for the PieceBoard
+            Grid grid = new Grid(5, 5);
+
+            // Parse values into the grid
+            for (int i = 0; i < values.length; i++) {
+                int row = i / 5;
+                int col = i % 5;
+                grid.updateGridValue(col, row, Integer.parseInt(values[i]));
+            }
+
+            // Create a new PieceBoard with this grid
+            PieceBoard pieceBoard = new PieceBoard(grid, (double) gameWindow.getWidth() / 4, (double) gameWindow.getHeight() / 4);
+            pieceBoard.getStyleClass().add("gameBox");
+
+            // Cleanup the opponent boards map
+            opponentBoardScene.opponentBoards.remove(opponentName);
+            opponentBoardScene.opponentBoards.put(opponentName, pieceBoard);
+            opponentBoardScene.refreshOpponentBoardMap();
         }
     }
 
@@ -266,5 +299,46 @@ public class MultiplayerScene extends ChallengeScene {
      */
     protected void getInitialHighScore() {
 
+    }
+
+    /**
+     * Opens a window for displaying opponent's piece boards
+     */
+    private void openOpponentBoardDisplayer() {
+        // Create the stage
+        Stage opponentBoardStage = new Stage();
+        opponentBoardStage.setTitle("Opponent Board Displayer");
+
+        // Stops the game window from messing with the dimensions of the new window
+        opponentBoardStage.widthProperty().addListener((obs, oldVal, newVal) -> {
+            opponentBoardStage.setMinWidth((double) gameWindow.getWidth() / 2);
+            opponentBoardStage.setMinHeight((double) gameWindow.getWidth() / 2);
+            opponentBoardStage.setMaxWidth((double) gameWindow.getWidth() / 2);
+            opponentBoardStage.setMaxHeight((double) gameWindow.getWidth() / 2);
+        });
+        opponentBoardStage.heightProperty().addListener((obs, oldVal, newVal) -> {
+            opponentBoardStage.setMinWidth((double) gameWindow.getWidth() / 2);
+            opponentBoardStage.setMinHeight((double) gameWindow.getWidth() / 2);
+            opponentBoardStage.setMaxWidth((double) gameWindow.getWidth() / 2);
+            opponentBoardStage.setMaxHeight((double) gameWindow.getWidth() / 2);
+        });
+
+        // Initialize the opponent board scene
+        opponentBoardScene = new OpponentBoardScene(gameWindow);
+        opponentBoardScene.build();
+        opponentBoardScene.initialise();
+
+        // Create the new scene
+        Scene scene = new Scene(opponentBoardScene.root, (double) gameWindow.getWidth() / 2, (double) gameWindow.getHeight() / 2);
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/style/game.css")).toExternalForm());
+
+        opponentBoardStage.setScene(scene);
+        opponentBoardStage.setMinWidth(scene.getWidth() / 2);
+        opponentBoardStage.setMinHeight(scene.getHeight() / 2);
+        opponentBoardStage.setMaxWidth(scene.getWidth() / 2);
+        opponentBoardStage.setMaxHeight(scene.getHeight() / 2);
+        opponentBoardStage.setResizable(true);
+
+        opponentBoardStage.show();
     }
 }
